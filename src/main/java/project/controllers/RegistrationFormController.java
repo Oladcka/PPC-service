@@ -39,19 +39,12 @@ public class RegistrationFormController {
                 user.getRole().add(Role.valueOf(form.get(key)));
             }
         }
-        if (!userService.createUser(user)) {
-            model.addAttribute("errorMessage", "Пользователь с login: " + user.getLogin() +
+        if (!userService.createUser(user, name, surname)) {
+            model.addAttribute("errorMessage", "Пользователь с login: " + user.getUsername() +
                     " уже существует");
             return "registration";
         }
         else
-        {
-            Person person = new Person();
-            person.setUser(user);
-            person.setName(name);
-            person.setSurname(surname);
-            personRepository.save(person);
-        }
         return "redirect:/login";
     }
 

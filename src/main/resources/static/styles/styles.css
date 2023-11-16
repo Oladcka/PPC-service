@@ -2,3 +2,11 @@
     border: 1px solid black;
     padding: 10px;
 }
+.yellow-font {
+    color: #ffc24b;
+}
+.grey-style {
+    background-color: dimgray;
+    border-color: white;
+    color: white
+}

@@ -20,7 +20,7 @@ public class UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public boolean createUser(Users user) {
+    public boolean createUser(Users user, String name, String surname) {
         String login = user.getLogin();
         String password = user.getPassword();
 
@@ -33,6 +33,8 @@ public class UserService{
         Users savedUser = userRepository.save(user);
         Person person = new Person();
         person.setUser(savedUser);
+        person.setName(name);
+        person.setSurname(surname);
         personRepository.save(person);
         return true;
     }

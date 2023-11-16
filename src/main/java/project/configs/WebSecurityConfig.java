@@ -27,9 +27,7 @@ public class WebSecurityConfig {
         http
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/static/**", "/registration/**").permitAll()
-                        .requestMatchers("/briefsSpecialist","/projectsSpecialist/**","/addCampaign/**","/campaigns/**","/editSellCampaign/**","/editBrendCampaign/**", "/ads/**", "/editAdd/**").hasRole("SPECIALIST")
-                        .requestMatchers("/briefsClient/**", "/addBrief/**", "/editBrief/**", "/projectsClient/**", "/addSellData/**","/addBrendData/**" ).hasRole("CLIENT")
-                        .requestMatchers("/showData/**", "/", "/home", "/account/**").hasAnyRole("CLIENT", "SPECIALIST")
+                        .requestMatchers("/showData/**", "/", "/home", "/account/**").hasAnyRole("BOSS", "SPECIALIST")
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form

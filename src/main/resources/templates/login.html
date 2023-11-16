@@ -15,30 +15,36 @@
 
 <body class="text-center" style="background-color: dimgray; color: white" >
 
-<div class = "container border d-flex justify-content-center" style="width: 25%; height: 25%; margin-top: 60px">
+<div class = "container border d-flex justify-content-center" style="width: 25%; height: 25%; margin-top: 60px; background-color: white; border-radius: 15px; color: black">
 
     <form th:action="@{/login}" method="post">
+        <br>
         <div>
-            <img src="/static/images/logo.png" alt="Logo" height="80" width="200">
+            <img src="/static/images/logo.png" alt="Logo" height="70" width="70">
         </div>
         <h1 class="h3 mb-3 fw-normal">Войдите в аккаунт</h1>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-        <br>
         <div class="form-floating">
             <input type="text" class="form-control" id="floatingInput" placeholder="Email" name="username">
-            <label for="floatingInput">Логин</label>
+            <label for="floatingInput" style="color: black">Логин</label>
+        </div>
+        <div th:if="${errorMessage}" class="text-danger" style="font-size: smaller;">
+            <p th:text="${errorMessage}"></p>
         </div>
         <br>
         <div class="form-floating">
             <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password">
-            <label for="floatingPassword">Пароль</label>
+            <label for="floatingPassword" style="color: black">Пароль</label>
+        </div>
+        <div th:if="${errorMessage}" class="text-danger" style="font-size: smaller;">
+            <p th:text="${errorMessage}"></p>
         </div>
         <br>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Войти</button>
+        <button class="w-100 btn btn-lg btn-primary" style="background-color: #ffc24b; border-color: white; color: black" type="submit">Войти</button>
         <div class="text-center">
-            <a th:href="@{/registration}">Регистрация</a>
+            <a th:href="@{/registration}" style="color: #ffc24b">Регистрация</a>
         </div>
-        <p class="mt-5 mb-3 text-body-secondary">©2023</p>
+        <br>
     </form>
 </div>
 <div th:replace="fragments/footer :: footer"></div>
