@@ -14,14 +14,22 @@
     <script>
         function previewImage(event) {
             var input = event.target;
-            var reader = new FileReader();
+            var files = input.files;
 
-            reader.onload = function() {
+            // Проверяем количество выбранных файлов
+            if (files.length > 1) {
+                alert("Пожалуйста, выберите только одно изображение.");
+                input.value = ""; // Сбрасываем выбранные файлы
+                return; // Прекращаем выполнение функции
+            }
+
+            var reader = new FileReader();
+            reader.onload = function () {
                 var previewImage = document.getElementById('accImage');
                 previewImage.src = reader.result;
             };
 
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(files[0]);
         }
     </script>
 </head>
@@ -30,7 +38,7 @@
 
 <div class = "container border d-flex justify-content-center" style="width: 25%; height: 25%; margin-top: 60px; background-color: white; border-color: black; border-radius: 15px; color: black">
 
-    <form th:action="@{/registration/reg_new_user}" method="post" style="text-align: center">
+    <form th:action="@{/registration/reg_new_user}" method="post" style="text-align: center" enctype="multipart/form-data">
         <div>
             <br>
             <img src="/static/images/logo.png" alt="Logo" width="70" height="70">
@@ -43,7 +51,7 @@
         <br>
 <!--        <div style="text-align: left; color: #ffc24b"><label >Загрузите фото для аккаунта:</label></div>-->
         <div class="form-floating">
-            <input type="file" style = "border-color: black" name="image" id="image" accept="image/*" onchange="previewImage(event)">
+            <input type="file" style = "border-color: black" name="image" id="image" multiple accept="image/*" onchange="previewImage(event)">
             <br/><br/>
         </div>
         <div class="form-floating mb-3" style="color: black">
@@ -66,7 +74,7 @@
                    minlength="8" maxlength="16">
             <label for="floatingPassword">Пароль</label>
         </div>
-        <input type="hidden" name="role" value="ROLE_BOSS">
+        <input type="hidden" name="role" value="ROLE_SPECIALIST">
         <button class="w-100 btn btn-lg btn-primary" style="background-color: #ffc24b; border-color: white; color: black" type="submit">Регистрация</button>
         <br>
         <div class="text-center">

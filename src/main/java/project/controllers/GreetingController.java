@@ -1,6 +1,9 @@
 package project.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,16 +24,14 @@ public class GreetingController {
     public String home() {
         return "home";
     }
+    @GetMapping("/loadRep")
+    public String showBriefs(Authentication authentication, Model model){
+        User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Users user = userRepository.findByLogin(user1.getUsername());
+//        model.addAttribute("briefs", briefRepository.findAllByClient(user));
+        return "loadReport";
+    }
 
-//    @PostMapping("/login")
-//    public String login(Model model, @ModelAttribute("user") Users user){
-//                Optional<Users> u = userRepository.findByLoginAndPassword(user.getLogin(), user.getPassword());
-//        if(u.isEmpty()){
-//            //model.addAttribute("errorMessage", "Данного пользователя не существует! Проверьте корректность введённых данных.");
-//            return "redirect:/login";
-//        }
-//        return "redirect:/home";
-//    }
 
 
 }
