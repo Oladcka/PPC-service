@@ -34,4 +34,7 @@ public class SearchQuery {
 
     @Column(nullable = false)
     private String addGroup;
+
+    @Column(nullable = false)
+    private String keyword;
 }

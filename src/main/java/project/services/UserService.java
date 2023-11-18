@@ -13,7 +13,9 @@ import project.repositories.PersonRepository;
 import project.repositories.UserRepository;
 
 import java.awt.*;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,15 +44,29 @@ public class UserService {
         person.setUser(savedUser);
         person.setName(name);
         person.setSurname(surname);
-        try {
-            String UPLOAD_DIRECTORY = System.getProperty("user.dir") + "/src/main/resources/static/images/";
-//            Path fileNameAndPath = Paths.get(UPLOAD_DIRECTORY, images[0].getOriginalFilename());
+            String UPLOAD_DIRECTORY = "D:/Учёба/КП/CProject/src/main/resources/static/images/";
+            Path fileNameAndPath = Paths.get(UPLOAD_DIRECTORY+images[0].getOriginalFilename());
 //            StringBuilder fileNames = new StringBuilder();
 //            File file = new File(UPLOAD_DIRECTORY + images[0].getOriginalFilename());
 //            file.createNewFile();
 //            Files.write(fileNameAndPath, images[0].getBytes());
-            Path fileNameAndPath = Paths.get(UPLOAD_DIRECTORY, images[0].getOriginalFilename());
-            Files.write(fileNameAndPath, images[0].getBytes());
+        try {
+            if (!Files.exists(fileNameAndPath)) {
+                Files.createDirectories(fileNameAndPath.getParent()); // Создаем родительскую директорию, если она не существует
+                Files.createFile(fileNameAndPath); // Создаем файл
+            }
+
+            BufferedOutputStream fio = new BufferedOutputStream(new FileOutputStream(fileNameAndPath.toFile()));
+            byte[] buffer = images[0].getBytes();
+            fio.write(buffer, 0, buffer.length);
+            fio.flush();
+            fio.close();
+        }
+        catch (Exception e) {
+            return false;
+            // Обработка ошибок
+        }
+//            Files.write(fileNameAndPath, images[0].getBytes());
             person.setPhoto("../../images/" + images[0].getOriginalFilename());
             personRepository.save(person);
 //            for (MultipartFile image : images) {
@@ -60,9 +76,6 @@ public class UserService {
 //                personRepository.save(person);
 //            }
 
-        } catch (IOException e) {
-
-        }
         return true;
     }
 }
