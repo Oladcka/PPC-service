@@ -38,29 +38,36 @@
 
 <div class = "container border d-flex justify-content-center" style="width: 25%; height: 25%; margin-top: 60px; background-color: white; border-color: black; border-radius: 15px; color: black">
 
-    <form th:action="@{/registration/reg_new_user}" method="post" style="text-align: center" enctype="multipart/form-data">
-        <div>
-            <br>
-            <img src="/static/images/logo.png" alt="Logo" width="70" height="70">
+    <form class="align-items-center justify-content-center" th:action="@{/registration/reg_new_user}" method="post" style="text-align: center" enctype="multipart/form-data">
+        <div class="row d-flex align-items-center justify-content-center" style="min-height: 100px; max-width: 300px">
+            <div class="col d-flex align-items-center justify-content-center" style="max-width: 70px; padding: 0">
+                <img src="/static/images/logo.png" alt="Logo" width="70" height="70" style="padding-bottom: 15px">
+            </div>
+            <div class="col d-flex align-items-center justify-content-center" style="padding: 0">
+                <h1 class="fw-normal" style="margin: 0">Регистрация</h1>
+            </div>
         </div>
-        <h1 class="h3 mb-3 fw-normal">Регистрация</h1>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-        <div style="text-align: center; width: 100px; height: 100px; border-radius: 50%; border: 5px solid dimgrey; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-            <img src="/static/images/acc.png" style="object-fit: cover;" id="accImage" alt="Photo" height="100%" width="100%">
+        <div class="row justify-content-center">
+            <div style="text-align: center; width: 200px; height: 200px; border-radius: 100%; border: 5px solid #ffc24b; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img src="/static/images/acc.png" style="object-fit: cover;" id="accImage" alt="Photo" height="100%" width="120%">
+            </div>
         </div>
         <br>
 <!--        <div style="text-align: left; color: #ffc24b"><label >Загрузите фото для аккаунта:</label></div>-->
-        <div class="form-floating">
-            <input type="file" style = "border-color: black" name="image" id="image" multiple accept="image/*" onchange="previewImage(event)">
-            <br/><br/>
+        <div class="row">
+            <div class="form-floating">
+                <input type="file" style = "border-color: black" name="image" id="image" multiple accept="image/*" onchange="previewImage(event)">
+                <br/><br/>
+            </div>
         </div>
         <div class="form-floating mb-3" style="color: black">
             <input type="text" class="form-control" id="name" placeholder="name" name="name" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
-            <label for="floatingInput">Имя</label>
+            <label for="name">Имя</label>
         </div>
         <div class="form-floating mb-3" style="color: black">
             <input type="text" class="form-control" id="surname" placeholder="surname" name="surname" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
-            <label for="floatingInput">Фамилия</label>
+            <label for="surname">Фамилия</label>
         </div>
         <div class="form-floating mb-3" style="color: black">
             <input type="text" class="form-control" id="floatingInput" placeholder="login" name="login" required minlength="8" maxlength="16">

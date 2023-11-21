@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,12 +49,16 @@ public class GreetingController {
     }
 
     private List<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
+    private List<SearchQuery> filteredSearchQueries = new ArrayList<SearchQuery>();
     private List<Metric> metrics = new ArrayList<Metric>();
+    private List<Metric> filteredMetrics = new ArrayList<Metric>();
 
     private Clean clean;
 
     @PostMapping("/loadReport")
     public String loadReport (Model model, @RequestParam("fileInput") MultipartFile[] reports, @RequestParam("name") String name, @RequestParam("system") String system) throws IOException {
+        searchQueries.clear();
+        metrics.clear();
         XSSFWorkbook workbookNew = new XSSFWorkbook(reports[0].getInputStream());
 //        XSSFSheet worksheetNew = workbookNew.getSheetAt(0);
 
@@ -136,6 +141,255 @@ public class GreetingController {
     }
     private boolean checkGoogleReport (XSSFWorkbook workbook) {
         return true;
+    }
+
+    @PostMapping("/filter")
+    public String filter (Model model, @RequestParam("campaign") String campaign, @RequestParam("group") String group, @RequestParam("query") String query, @RequestParam("Showsselect") String showsselect,
+                          @RequestParam("Shows") String shows, @RequestParam("Clicksselect") String clicksselect, @RequestParam("Clicks") String clicks, @RequestParam("CTRselect") String ctrselect, @RequestParam("CTR") String ctr,
+                          @RequestParam("СostClickselect") String costClickSelect, @RequestParam("СostClick") String costClick, @RequestParam("Convselect") String convSelect, @RequestParam("Conv") String conv,
+                          @RequestParam("PerConvselect") String perConvSelect, @RequestParam("PerConv") String perConv, @RequestParam("СostConvselect") String costConvSelect,
+                          @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) {
+
+        filteredSearchQueries = searchQueries;
+        filteredMetrics = metrics;
+        Iterator<Metric> iterator = filteredMetrics.iterator();
+        if (campaign!=null) {
+            iterator = filteredMetrics.iterator();
+            while (iterator.hasNext()) {
+                Metric metric = iterator.next();
+                if (!metric.getSearchQuery().getCampaign().contains(campaign)) iterator.remove();
+            }
+        }
+        if (group!=null) {
+            iterator = filteredMetrics.iterator();
+            while (iterator.hasNext()) {
+                Metric metric = iterator.next();
+                if (!metric.getSearchQuery().getAddGroup().contains(group)) iterator.remove();
+            }
+        }
+        if (query!=null) {
+            iterator = filteredMetrics.iterator();
+            while (iterator.hasNext()) {
+                Metric metric = iterator.next();
+                if (!metric.getSearchQuery().getText().contains(query)) iterator.remove();
+            }
+        }
+        if (!shows.equals("")) {
+            if (showsselect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                   if (!(metric.getShows()>Integer.parseInt(shows))) iterator.remove();
+                }
+            } else if (showsselect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getShows()< Integer.parseInt(shows))) iterator.remove();
+                }
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getShows()!=Integer.parseInt(shows)) iterator.remove();
+                }
+            }
+        }
+        if (!clicks.equals("")) {
+            if (clicksselect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getClicks()>Integer.parseInt(clicks))) iterator.remove();
+                }
+            } else if (clicksselect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getClicks()< Integer.parseInt(clicks))) iterator.remove();
+                }
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=Integer.parseInt(clicks)) iterator.remove();
+                }
+            }
+        }
+        if (!ctr.equals("")) {
+            if (ctrselect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getShows()!=0) {
+                        if (!((metric.getClicks() * 1.0 / metric.getShows()) > Double.parseDouble(ctr)))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            } else if (ctrselect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getShows()!=0) {
+                        if (!((metric.getClicks() * 1.0 / metric.getShows()) < Double.parseDouble(ctr)))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getShows()!=0) {
+                        if ((metric.getClicks() * 1.0 / metric.getShows()) != Double.parseDouble(ctr))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            }
+        }
+        if (!costClick.equals("")) {
+            if (costClickSelect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if (!((metric.getConsumption() * 1.0 / metric.getClicks()) > Double.parseDouble(costClick)))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            } else if (costClickSelect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if (!((metric.getConsumption() * 1.0 / metric.getClicks()) < Double.parseDouble(costClick)))
+                            iterator.remove();
+                    } else iterator.remove();}
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if ((metric.getConsumption() * 1.0 / metric.getClicks())!=Double.parseDouble(costClick))
+                            iterator.remove();
+                    } else iterator.remove();}
+            }
+        }
+        if (!conv.equals("")) {
+            if (convSelect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getConversions()>Integer.parseInt(conv))) iterator.remove();
+                }
+            } else if (convSelect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getConversions()< Integer.parseInt(conv))) iterator.remove();
+                }
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getConversions()!=Integer.parseInt(conv)) iterator.remove();
+                }
+            }
+        }
+        if (!perConv.equals("")) {
+            if (perConvSelect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if (!((metric.getConversions() * 1.0 / metric.getClicks()) > Double.parseDouble(perConv)))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            } else if (perConvSelect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if (!((metric.getConversions() * 1.0 / metric.getClicks()) < Double.parseDouble(perConv)))
+                            iterator.remove();
+                    } else iterator.remove();}
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getClicks()!=0) {
+                        if ((metric.getConversions() * 1.0 / metric.getClicks())!=Double.parseDouble(perConv))
+                            iterator.remove();
+                    } else iterator.remove();}
+            }
+        }
+        if (!costConv.equals("")) {
+            if (costConvSelect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getConversions()!=0) {
+                        if (!((metric.getConsumption() * 1.0 / metric.getConversions()) > Double.parseDouble(costConv)))
+                            iterator.remove();
+                    } else iterator.remove();
+                }
+            } else if (costConvSelect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getConversions()!=0) {
+                        if (!((metric.getConsumption() * 1.0 / metric.getConversions()) < Double.parseDouble(costConv)))
+                            iterator.remove();
+                    } else iterator.remove();}
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getConversions()!=0) {
+                        if ((metric.getConsumption() * 1.0 / metric.getConversions())!=Double.parseDouble(costConv))
+                            iterator.remove();
+                    } else iterator.remove();}
+            }
+        }
+        if (!cons.equals("")) {
+            if (consSelect.equals("Больше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getConsumption()>Integer.parseInt(cons))) iterator.remove();
+                }
+            } else if (consSelect.equals("Меньше"))
+            {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (!(metric.getConsumption()< Integer.parseInt(cons))) iterator.remove();
+                }
+            } else {
+                iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (metric.getConsumption()!=Integer.parseInt(cons)) iterator.remove();
+                }
+            }
+        }
+        model.addAttribute("metrics", filteredMetrics);
+    return "cleaning";
     }
 
 
