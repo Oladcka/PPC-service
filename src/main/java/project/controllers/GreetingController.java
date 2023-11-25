@@ -49,9 +49,9 @@ public class GreetingController {
     }
 
     private List<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
-    private List<SearchQuery> filteredSearchQueries = new ArrayList<SearchQuery>();
+//    private List<SearchQuery> filteredSearchQueries = new ArrayList<SearchQuery>();
     private List<Metric> metrics = new ArrayList<Metric>();
-    private List<Metric> filteredMetrics = new ArrayList<Metric>();
+//    private List<Metric> filteredMetrics = new ArrayList<Metric>();
 
     private Clean clean;
 
@@ -150,8 +150,11 @@ public class GreetingController {
                           @RequestParam("PerConvselect") String perConvSelect, @RequestParam("PerConv") String perConv, @RequestParam("СostConvselect") String costConvSelect,
                           @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) {
 
-        filteredSearchQueries = searchQueries;
-        filteredMetrics = metrics;
+
+        List<Metric> filteredMetrics = new ArrayList<Metric>();
+        for (Metric metric:metrics) {
+            filteredMetrics.add(metric);
+        }
         Iterator<Metric> iterator = filteredMetrics.iterator();
         if (campaign!=null) {
             iterator = filteredMetrics.iterator();

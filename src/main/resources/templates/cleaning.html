@@ -124,154 +124,154 @@
 <div class="container" style="margin-right: 100px">
     <div class="row">
         <div class="col" style="width: 300px"><br>
-            <form class="needs-validation" style="padding: 10px; border-radius: 10px; background-color: lightgray" th:method="post" th:action="@{/filter}"><h4>Фильтры:</h4>
-                <div class="form-floating mb-3" style="color: black">
-                    <input type="text" class="form-control" id="campaign" placeholder="campaign" name="campaign">
-                    <label for="campaign">Название кампании содержит</label>
-                </div>
-                <div class="form-floating mb-3" style="color: black">
-                    <input type="text" class="form-control" id="group" placeholder="group" name="group">
-                    <label for="group">Название группы содержит</label>
-                </div>
-                <div class="form-floating mb-3" style="color: black">
-                    <input type="text" class="form-control" id="query" placeholder="query" name="query">
-                    <label for="group">Текст запроса содержит</label>
-                </div>
-                <h6>Показы</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="Showsselect" name="Showsselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
+                <form class="needs-validation" style="padding: 10px; border-radius: 10px; background-color: lightgray" th:method="post" th:action="@{/filter}"><h4>Фильтры:</h4>
+                    <div class="form-floating mb-3" style="color: black">
+                        <input type="text" class="form-control" id="campaign" placeholder="campaign" name="campaign">
+                        <label for="campaign">Название кампании содержит</label>
                     </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="Shows" placeholder="0" name="Shows" min="0" max="100000">
+                    <div class="form-floating mb-3" style="color: black">
+                        <input type="text" class="form-control" id="group" placeholder="group" name="group">
+                        <label for="group">Название группы содержит</label>
+                    </div>
+                    <div class="form-floating mb-3" style="color: black">
+                        <input type="text" class="form-control" id="query" placeholder="query" name="query">
+                        <label for="group">Текст запроса содержит</label>
+                    </div>
+                    <h6>Показы</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="Showsselect" name="Showsselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="Shows" placeholder="0" name="Shows" min="0" max="100000">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>Клики</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required name="Clicksselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="Clicks" placeholder="0" name="Clicks" min="0" max="10000">
+                    <br>
+                    <h6>Клики</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required name="Clicksselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="Clicks" placeholder="0" name="Clicks" min="0" max="10000">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>CTR</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="CTRselect" name="CTRselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="CTR" placeholder="0" name="CTR" min="0" max="1" step="0.01">
+                    <br>
+                    <h6>CTR</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="CTRselect" name="CTRselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="CTR" placeholder="0" name="CTR" min="0" max="1" step="0.01">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>Цена клика</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="СostClickselect" name="СostClickselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="СostClick" placeholder="0" name="СostClick" min="0" max="100" step="0.01">
+                    <br>
+                    <h6>Цена клика</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="СostClickselect" name="СostClickselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="СostClick" placeholder="0" name="СostClick" min="0" max="100" step="0.01">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>Конверсии</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="Convselect" name="Convselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="Conv" placeholder="0" name="Conv" min="0" max="1000">
+                    <br>
+                    <h6>Конверсии</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="Convselect" name="Convselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="Conv" placeholder="0" name="Conv" min="0" max="1000">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>%Конверсии</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="PerConvselect" name="PerConvselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="PerConv" placeholder="0" name="PerConv" min="0" max="100" step="0.01">
+                    <br>
+                    <h6>%Конверсии</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="PerConvselect" name="PerConvselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="PerConv" placeholder="0" name="PerConv" min="0" max="100" step="0.01">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>Цена цели</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="СostConvselect" name="СostConvselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="СostConv" placeholder="0" name="СostConv" min="0" max="200" step="0.01">
+                    <br>
+                    <h6>Цена цели</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="СostConvselect" name="СostConvselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="СostConv" placeholder="0" name="СostConv" min="0" max="200" step="0.01">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <h6>Расход</h6>
-                <div class="row">
-                    <div class="col">
-                        <select class="form-select" required id="Сonsselect" name="Сonsselect" style="width: 150px">
-                            <option value="Больше" selected>Больше</option>
-                            <option value="Меньше">Меньше</option>
-                            <option value="Равно">Равно</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <div class="form-floating">
-                            <input type="number" class="form-control" style="height: 35px" id="Сons" placeholder="0" name="Сons" min="0" max="1000" step="0.01">
+                    <br>
+                    <h6>Расход</h6>
+                    <div class="row">
+                        <div class="col">
+                            <select class="form-select" required id="Сonsselect" name="Сonsselect" style="width: 150px">
+                                <option value="Больше" selected>Больше</option>
+                                <option value="Меньше">Меньше</option>
+                                <option value="Равно">Равно</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" style="height: 35px" id="Сons" placeholder="0" name="Сons" min="0" max="1000" step="0.01">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <br>
-                <div class="row">
-                    <div class="col">
-                        <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:lightgray;color: black;" type="submit">Показать</button>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:lightgray;color: black;" type="submit">Показать</button>
+                        </div>
                     </div>
-                </div>
-                <br>
-            </form>
+                    <br>
+                </form>
         </div>
         <div class="col">
             <br>
@@ -279,6 +279,7 @@
             <h5>все запросы представлены в таблице ниже 👇</h5>
             <br>
             <div class="row">
+                <div class="col"></div>
                 <div class="col" style="padding-left: 5px">
                     <label style="color: dimgrey">
                         <input type="checkbox" id="selectAllCheckbox"> Выделить все
@@ -300,7 +301,6 @@
                         updateButtonVisibility();
                     }
                 </script>
-                <div class="col"></div>
                 <div class="col"></div>
                 <div class="col"></div>
                 <div class="col"></div>
@@ -328,7 +328,6 @@
                         </tr>
                         </thead>
                         <tbody>
-                       <div th:if="${metrics.get(0)} != 'null'">
                            <div th:each="metric : ${metrics}">
                                 <tr>
                                     <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedMetrics" value="${metric.getId()}" /></td>
@@ -357,12 +356,11 @@
                                     <td th:text="${metric.getCurrencyCode()}"></td>
                                 </tr>
                            </div>
-                       </div>
                         </tbody>
                     </table>
                    </div>
                 </div>
-                <div th:if="${metrics.get(0)} == 'null'">
+                <div th:if="${#lists.isEmpty(metrics)}">
                     <div class="row">
                         <br>
                         <label style="text-align: center; color: firebrick">По Вашему запросу ничего не найдено</label>
