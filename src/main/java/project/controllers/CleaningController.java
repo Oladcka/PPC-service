@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import project.models.*;
 import project.repositories.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -99,10 +101,11 @@ public class CleaningController {
                         metric.setCurrencyCode(code);
                         metric.setSearchQuery(searchQuery);
                         metrics.add(metric);
-                        model.addAttribute("metrics", metrics);
                     }
-
                 }
+                model.addAttribute("data1", createPieSrting(metrics, 1));
+                model.addAttribute("data2", createPieSrting(metrics, 2));
+                model.addAttribute("metrics", metrics);
                 return "analysis";
             }
             else {
@@ -113,11 +116,6 @@ public class CleaningController {
             if (checkGoogleReport(workbookNew))  return "loadReport";
             else return "home";
         }
-
-//        try (BufferedOutputStream fio = new BufferedOutputStream(new FileOutputStream(UPLOAD_DIRECTORY))) {
-//            workbookNew.write(fio);
-//        }
- //       out.close();
     }
     private boolean checkYandexReport (XSSFWorkbook workbook) {
         try {
@@ -139,7 +137,7 @@ public class CleaningController {
                           @RequestParam("Shows") String shows, @RequestParam("Clicksselect") String clicksselect, @RequestParam("Clicks") String clicks, @RequestParam("CTRselect") String ctrselect, @RequestParam("CTR") String ctr,
                           @RequestParam("СostClickselect") String costClickSelect, @RequestParam("СostClick") String costClick, @RequestParam("Convselect") String convSelect, @RequestParam("Conv") String conv,
                           @RequestParam("PerConvselect") String perConvSelect, @RequestParam("PerConv") String perConv, @RequestParam("СostConvselect") String costConvSelect,
-                          @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) {
+                          @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) throws JsonProcessingException {
 
         String filters = " ";
         filteredMetrics.clear();
@@ -410,6 +408,13 @@ public class CleaningController {
             }
         }
         if (filters.equals("")) filters = "none";
+        if(!filteredMetrics.isEmpty()) {
+            model.addAttribute("data1", createPieSrting(filteredMetrics, 1));
+            model.addAttribute("data2", createPieSrting(filteredMetrics, 2));
+        } else {
+            model.addAttribute("data1", createPieSrting(metrics, 1));
+            model.addAttribute("data2", createPieSrting(metrics, 2));
+        }
         model.addAttribute("filters", filters);
         model.addAttribute("metrics", filteredMetrics);
     return "analysis";
@@ -420,7 +425,6 @@ public class CleaningController {
         List<NegPhrase> negPhrases = new ArrayList<>();
         List<String> negPhrasesTexts = new ArrayList<String>();
         List<String> articleList = new ArrayList<String>();
-//        Analyzer analyzer = new MorfologikAnalyzer();
         articleList(articleList);
         for (SearchQuery searchQuery: searchQueries) {
             String[] text = searchQuery.getText().split("\\s+");
@@ -444,6 +448,25 @@ public class CleaningController {
 
         model.addAttribute("negPhrases", negPhrases);
         return "forecast";
+    }
+
+    private String createPieSrting (List<Metric> metrics, int chart) throws JsonProcessingException {
+        Integer shows = 0, clicks = 0, convs = 0;
+        for (Metric metric1:metrics) {
+            shows+=metric1.getShows();
+            clicks+=metric1.getClicks();
+            convs+=metric1.getConversions();
+
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (chart==1) {
+            List<Integer> data1 = Arrays.asList(shows,clicks);
+            return objectMapper.writeValueAsString(data1);
+        }
+        else {
+            List<Integer> data2 = Arrays.asList(clicks, convs);
+            return objectMapper.writeValueAsString(data2);
+        }
     }
 
     private void articleList (List<String> articleList) {
