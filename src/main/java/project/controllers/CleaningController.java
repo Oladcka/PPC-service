@@ -1,6 +1,5 @@
 package project.controllers;
 
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -10,29 +9,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import project.models.*;
-import project.repositories.PersonRepository;
 import project.repositories.UserRepository;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.*;
 
 import static com.github.demidko.aot.WordformMeaning.lookupForMeanings;
 
 @Controller
-public class GreetingController {
+public class CleaningController {
 
     @Autowired
     private UserRepository userRepository;
@@ -112,7 +103,7 @@ public class GreetingController {
                     }
 
                 }
-                return "cleaning";
+                return "analysis";
             }
             else {
                 model.addAttribute("error", "ошибка");
@@ -150,32 +141,35 @@ public class GreetingController {
                           @RequestParam("PerConvselect") String perConvSelect, @RequestParam("PerConv") String perConv, @RequestParam("СostConvselect") String costConvSelect,
                           @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) {
 
-
+        String filters = " ";
         filteredMetrics.clear();
         for (Metric metric:metrics) {
             filteredMetrics.add(metric);
         }
         Iterator<Metric> iterator = filteredMetrics.iterator();
-        if (campaign!=null) {
+        if (!campaign.equals("")) {
             iterator = filteredMetrics.iterator();
             while (iterator.hasNext()) {
                 Metric metric = iterator.next();
                 if (!metric.getSearchQuery().getCampaign().contains(campaign)) iterator.remove();
             }
+            filters+=("Кампания содержит: " + campaign + "; ");
         }
-        if (group!=null) {
+        if (!group.equals("")) {
             iterator = filteredMetrics.iterator();
             while (iterator.hasNext()) {
                 Metric metric = iterator.next();
                 if (!metric.getSearchQuery().getAddGroup().contains(group)) iterator.remove();
             }
+            filters+=("Группа содержит: " + group + "; ");
         }
-        if (query!=null) {
+        if (!query.equals("")) {
             iterator = filteredMetrics.iterator();
             while (iterator.hasNext()) {
                 Metric metric = iterator.next();
                 if (!metric.getSearchQuery().getText().contains(query)) iterator.remove();
             }
+            filters+=("Запрос содержит: " + query + "; ");
         }
         if (!shows.equals("")) {
             if (showsselect.equals("Больше"))
@@ -185,6 +179,7 @@ public class GreetingController {
                     Metric metric = iterator.next();
                    if (!(metric.getShows()>Integer.parseInt(shows))) iterator.remove();
                 }
+                filters+=("Показов > " + shows.toString() + "; ");
             } else if (showsselect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -192,12 +187,14 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getShows()< Integer.parseInt(shows))) iterator.remove();
                 }
+                filters+=("Показов < " + shows.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
                     Metric metric = iterator.next();
                     if (metric.getShows()!=Integer.parseInt(shows)) iterator.remove();
                 }
+                filters+=("Показов " + shows.toString() + "; ");
             }
         }
         if (!clicks.equals("")) {
@@ -208,6 +205,7 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getClicks()>Integer.parseInt(clicks))) iterator.remove();
                 }
+                filters+=("Кликов > " + clicks.toString() + "; ");
             } else if (clicksselect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -215,6 +213,7 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getClicks()< Integer.parseInt(clicks))) iterator.remove();
                 }
+                filters+=("Кликов < " + clicks.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
@@ -222,6 +221,7 @@ public class GreetingController {
                     if (metric.getClicks()!=Integer.parseInt(clicks)) iterator.remove();
                 }
             }
+            filters+=("Кликов " + clicks.toString() + "; ");
         }
         if (!ctr.equals("")) {
             if (ctrselect.equals("Больше"))
@@ -234,6 +234,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("CTR > " + ctr.toString() + "; ");
             } else if (ctrselect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -244,6 +245,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("CTR < " + ctr.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
@@ -253,6 +255,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("CTR " + ctr.toString() + "; ");
             }
         }
         if (!costClick.equals("")) {
@@ -266,6 +269,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("Цена клика > " + costClick.toString() + "; ");
             } else if (costClickSelect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -275,6 +279,7 @@ public class GreetingController {
                         if (!((metric.getConsumption() * 1.0 / metric.getClicks()) < Double.parseDouble(costClick)))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("Цена клика < " + costClick.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
@@ -283,6 +288,7 @@ public class GreetingController {
                         if ((metric.getConsumption() * 1.0 / metric.getClicks())!=Double.parseDouble(costClick))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("Цена клика " + costClick.toString() + "; ");
             }
         }
         if (!conv.equals("")) {
@@ -293,6 +299,7 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getConversions()>Integer.parseInt(conv))) iterator.remove();
                 }
+                filters+=("Конверсий > " + conv.toString() + "; ");
             } else if (convSelect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -300,12 +307,14 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getConversions()< Integer.parseInt(conv))) iterator.remove();
                 }
+                filters+=("Конверсий < " + conv.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
                     Metric metric = iterator.next();
                     if (metric.getConversions()!=Integer.parseInt(conv)) iterator.remove();
                 }
+                filters+=("Конверсий " + conv.toString() + "; ");
             }
         }
         if (!perConv.equals("")) {
@@ -319,6 +328,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("%Конверсий > " + perConv.toString() + "; ");
             } else if (perConvSelect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -328,6 +338,7 @@ public class GreetingController {
                         if (!((metric.getConversions() * 1.0 / metric.getClicks()) < Double.parseDouble(perConv)))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("%Конверсий < " + perConv.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
@@ -336,6 +347,7 @@ public class GreetingController {
                         if ((metric.getConversions() * 1.0 / metric.getClicks())!=Double.parseDouble(perConv))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("%Конверсий " + perConv.toString() + "; ");
             }
         }
         if (!costConv.equals("")) {
@@ -349,6 +361,7 @@ public class GreetingController {
                             iterator.remove();
                     } else iterator.remove();
                 }
+                filters+=("Цена цели > " + costConv.toString() + "; ");
             } else if (costConvSelect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -358,6 +371,7 @@ public class GreetingController {
                         if (!((metric.getConsumption() * 1.0 / metric.getConversions()) < Double.parseDouble(costConv)))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("Цена цели < " + costConv.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
@@ -366,6 +380,7 @@ public class GreetingController {
                         if ((metric.getConsumption() * 1.0 / metric.getConversions())!=Double.parseDouble(costConv))
                             iterator.remove();
                     } else iterator.remove();}
+                filters+=("Цена цели " + costConv.toString() + "; ");
             }
         }
         if (!cons.equals("")) {
@@ -376,6 +391,7 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getConsumption()>Integer.parseInt(cons))) iterator.remove();
                 }
+                filters+=("Расход > " + cons.toString() + "; ");
             } else if (consSelect.equals("Меньше"))
             {
                 iterator = filteredMetrics.iterator();
@@ -383,16 +399,20 @@ public class GreetingController {
                     Metric metric = iterator.next();
                     if (!(metric.getConsumption()< Integer.parseInt(cons))) iterator.remove();
                 }
+                filters+=("Расход < " + cons.toString() + "; ");
             } else {
                 iterator = filteredMetrics.iterator();
                 while (iterator.hasNext()) {
                     Metric metric = iterator.next();
                     if (metric.getConsumption()!=Integer.parseInt(cons)) iterator.remove();
                 }
+                filters+=("Расход " + cons.toString() + "; ");
             }
         }
+        if (filters.equals("")) filters = "none";
+        model.addAttribute("filters", filters);
         model.addAttribute("metrics", filteredMetrics);
-    return "cleaning";
+    return "analysis";
     }
     @PostMapping("/forecast")
     public String forecast (Model model) throws IOException {
@@ -422,9 +442,8 @@ public class GreetingController {
             }
         }
 
-        if (filteredMetrics.isEmpty()) {model.addAttribute("metrics", metrics); model.addAttribute("negPhrases", negPhrases);}
-        else {model.addAttribute("metrics", filteredMetrics); model.addAttribute("negPhrases", negPhrases);}
-        return "cleaning";
+        model.addAttribute("negPhrases", negPhrases);
+        return "forecast";
     }
 
     private void articleList (List<String> articleList) {
