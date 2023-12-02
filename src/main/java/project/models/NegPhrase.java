@@ -19,8 +19,9 @@ public class NegPhrase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToMany
-    private List<SearchQuery> searchQueries;
+    @ManyToOne()
+    @JoinColumn(name = "negPhrase", nullable = false, foreignKey = @ForeignKey(name = "fk_search_query_neg"))
+    private SearchQuery searchQuery;
 
     @Column(nullable = false)
     private String text;

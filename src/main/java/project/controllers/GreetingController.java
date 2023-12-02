@@ -15,21 +15,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import project.models.Clean;
-import project.models.Metric;
-import project.models.SearchQuery;
-import project.models.Users;
+import project.models.*;
 import project.repositories.PersonRepository;
 import project.repositories.UserRepository;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import static com.github.demidko.aot.WordformMeaning.lookupForMeanings;
 
 @Controller
 public class GreetingController {
@@ -51,7 +51,7 @@ public class GreetingController {
     private List<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
 //    private List<SearchQuery> filteredSearchQueries = new ArrayList<SearchQuery>();
     private List<Metric> metrics = new ArrayList<Metric>();
-//    private List<Metric> filteredMetrics = new ArrayList<Metric>();
+    private List<Metric> filteredMetrics = new ArrayList<Metric>();
 
     private Clean clean;
 
@@ -151,7 +151,7 @@ public class GreetingController {
                           @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) {
 
 
-        List<Metric> filteredMetrics = new ArrayList<Metric>();
+        filteredMetrics.clear();
         for (Metric metric:metrics) {
             filteredMetrics.add(metric);
         }
@@ -394,6 +394,66 @@ public class GreetingController {
         model.addAttribute("metrics", filteredMetrics);
     return "cleaning";
     }
+    @PostMapping("/forecast")
+    public String forecast (Model model) throws IOException {
+        List<SearchQuery> badSearchQueries = new ArrayList<SearchQuery>();
+        List<NegPhrase> negPhrases = new ArrayList<>();
+        List<String> negPhrasesTexts = new ArrayList<String>();
+        List<String> articleList = new ArrayList<String>();
+//        Analyzer analyzer = new MorfologikAnalyzer();
+        articleList(articleList);
+        for (SearchQuery searchQuery: searchQueries) {
+            String[] text = searchQuery.getText().split("\\s+");
+            String[] key = searchQuery.getKeyword().split("\\s+");
+            List<String> textList = Arrays.asList(lemmaList(text));
+            List<String> keyList = Arrays.asList(lemmaList(key));
+            negPhrasesTexts = new ArrayList<>(textList);
+            negPhrasesTexts.removeAll(keyList);
+            negPhrasesTexts.removeAll(articleList);
+            if (!negPhrasesTexts.isEmpty()) {
+                for (String negPhrasesText:negPhrasesTexts) {
+                    System.out.println(negPhrasesText);
+                    NegPhrase negPhrase = new NegPhrase();
+                    negPhrase.setText(negPhrasesText);
+                    negPhrase.setStatus("new");
+                    negPhrase.setSearchQuery(searchQuery);
+                    negPhrases.add(negPhrase);
+                }
+            }
+        }
 
+        if (filteredMetrics.isEmpty()) {model.addAttribute("metrics", metrics); model.addAttribute("negPhrases", negPhrases);}
+        else {model.addAttribute("metrics", filteredMetrics); model.addAttribute("negPhrases", negPhrases);}
+        return "cleaning";
+    }
+
+    private void articleList (List<String> articleList) {
+        articleList.add("в");
+        articleList.add("за");
+        articleList.add("на");
+        articleList.add("до");
+        articleList.add("к");
+        articleList.add("под");
+        articleList.add("через");
+        articleList.add("для");
+        articleList.add("по");
+        articleList.add("от");
+        articleList.add("у");
+    }
+    private String[] lemmaList (String [] list) {
+        String[] lemmaList = new String[list.length];
+        for (int i = 0; i<list.length; i++) {
+            try {
+                var meanings = lookupForMeanings(list[i]);
+                lemmaList[i] = meanings.get(0).getLemma().toString();
+            }
+            catch (Exception e) {
+                lemmaList[i] = list[i];
+            }
+
+        }
+        return lemmaList;
+    }
 
 }
+

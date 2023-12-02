@@ -23,7 +23,7 @@ public class SearchQuery {
     @JoinColumn(name = "cleaning", nullable = false, foreignKey = @ForeignKey(name = "fk_search_query_clean"))
     private Clean clean;
 
-    @ManyToMany
+    @OneToMany(mappedBy= "searchQuery")
     List<NegPhrase> negPhrases;
 
     @Column(nullable = false)

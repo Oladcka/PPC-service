@@ -279,8 +279,8 @@
             <h5>все запросы представлены в таблице ниже 👇</h5>
             <br>
             <div class="row">
-                <div class="col"></div>
                 <div class="col" style="padding-left: 5px">
+                    <label> </label>
                     <label style="color: dimgrey">
                         <input type="checkbox" id="selectAllCheckbox"> Выделить все
                     </label>
@@ -410,8 +410,43 @@
                             }
                         }
                     </script>
-                <div>
                 </div>
+            <div th:if="${not #lists.isEmpty(negPhrases)}">
+            <div class="row">
+                    <!--                <div class="col">-->
+                    <div style="max-height: 400px; overflow-x: scroll; width: 1000px">
+                        <table class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                            <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+                            <tr style="font-weight: normal; border-top: none">
+                                <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
+                                <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
+                                <th class="sortable" style="font-weight: normal" scope="col">Запрос</th>
+                                <th class="sortable" style="font-weight: normal" scope="col">Ключ</th>
+                                <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
+                                <th scope="col" style="width: 40px"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tbody>
+                            <div th:each="negPhrase : ${negPhrases}">
+                                <tr>
+                                    <td th:text="${negPhrase.getSearchQuery.getCampaign()}"></td>
+                                    <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
+                                    <td th:text="${negPhrase.getSearchQuery.getText()}"></td>
+                                    <td th:text="${negPhrase.getSearchQuery.getKeyword()}"></td>
+                                    <td th:text="${negPhrase.getText()}"></td>
+                                    <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedMetrics" value="${metric.getId()}" /></td>
+                                </tr>
+                            </div>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--                </div>-->
+                    <!--                <div class="col"></div>-->
+                    <!--                <div class="col"></div>-->
+                    <!--                <div class="col"></div>-->
+                </div>
+            </div>
             </div>
         </div>
     </div>
