@@ -15,6 +15,7 @@
     <link rel="icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
     <link rel="shortcut icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.0.272/jspdf.debug.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/retina-dom-to-image@2.5.6/src/dom-to-image.js"></script>
     <style>
         #topBtn {
             display: none;
@@ -83,7 +84,20 @@
             document.body.scrollTop = 0;
             document.documentElement.scrollTop = 0;
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            /* Получите данные из модели, переданные с сервера */
+            var workbookData = [[${reportXSLX}]];
+
+            if (workbookData) {
+                /* Создайте Blob из данных workbook */
+                var blob = new Blob([workbookData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                /* Вызовите функцию saveAs для выбора пути сохранения */
+                saveAs(blob, 'report.xlsx');
+            }
+        });
         $(document).ready(function() {
+
             $('.sortable').click(function() {
                 var table = $(this).closest('table');
                 var rows = table.find('tbody > tr').get();
@@ -122,7 +136,34 @@
     </script>
 </head>
 <body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        /* Получите данные из модели, переданные с сервера */
+        var workbookBase64 = [[${reportXSLX}]];
 
+        if (workbookBase64) {
+            /* Преобразуйте строку Base64 в массив байтов */
+            var workbookBytes = atob(workbookBase64);
+            var workbookArray = new Uint8Array(workbookBytes.length);
+            for (var i = 0; i < workbookBytes.length; i++) {
+                workbookArray[i] = workbookBytes.charCodeAt(i);
+            }
+
+            /* Создайте Blob из массива байтов */
+            var blob = new Blob([workbookArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+            /* Создайте ссылку для скачивания файла */
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'report.xlsx';
+
+            /* Добавьте ссылку в документ и автоматически нажмите на нее */
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    });
+</script>
 <header th:insert ="~{fragments/header :: header}"></header>
 
 <div class="container" style="margin-right: 100px">
@@ -283,12 +324,12 @@
                     <div class="col"></div>
                     <div class="col" style="text-align: center">
                         <br>
-                        <h5 id = "ctrLabel" style="text-align: center">CTR</h5>
+                        <label id = "ctrLabel" style="text-align: center">CTR</label>
                         <canvas id="chart1" name="chart1" style="width: 100px; height: 100px"></canvas>
                     </div>
                     <div class="col" style="text-align: center">
                         <br>
-                        <h5 id = "convLabel" style="text-align: center">%Конверсии</h5>
+                        <label id = "convLabel" style="text-align: center">%Конверсии</label>
                         <canvas id="chart2" name="chart1" style="width: 100px; height: 100px"></canvas>
                     </div>
                     <div class="col">
@@ -343,30 +384,46 @@
                     </script>
                 </div>
                 <script>
+
                     document.getElementById('save-pdf').addEventListener('click', function() {
                         var doc = new jsPDF();
-                        var chartCanvas1 = document.getElementById('ctrLabel');
-                        var chartImage1 = chartCanvas1.toDataURL('image/png');
-                        doc.addImage(chartImage1, 'PNG', 50, 10, 50, 20);
 
-                        var chartCanvas2 = document.getElementById('chart1');
-                        var chartImage2 = chartCanvas2.toDataURL('image/png');
-                        doc.addImage(chartImage2, 'PNG', 50, 50, 100, 100);
+                        domtoimage.toPng(document.getElementById('ctrLabel')).then(function (imgData) {
+                            // добавляем изображение лейбла в документ
+                            doc.addImage(imgData, 'PNG', 90, 10, 30, 20);
 
-                        var chartCanvas4 = document.getElementById('convLabel');
-                        var chartImage4 = chartCanvas4.toDataURL('image/png');
-                        doc.addImage(chartImage4, 'PNG', 50, 170, 50, 20);
+                            // сохраняем графики как изображения
+                            var chartCanvas2 = document.getElementById('chart1');
+                            var chartImage2 = chartCanvas2.toDataURL('image/png');
+                            doc.addImage(chartImage2, 'PNG', 50, 40, 100, 100);
+                        });
+                        domtoimage.toPng(document.getElementById('convLabel')).then(function (imgData) {
+                            // добавляем изображение лейбла в документ
+                            doc.addImage(imgData, 'PNG', 80, 150, 50, 20);
 
-                        var chartCanvas3 = document.getElementById('chart2');
-                        var chartImage3 = chartCanvas3.toDataURL('image/png');
-                        doc.addImage(chartImage3, 'PNG', 50, 210, 100, 100);
-                        // сохраняем PDF-файл на устройстве
-                        doc.save('report.pdf');
+                            // сохраняем графики как изображения
+                            var chartCanvas3 = document.getElementById('chart2');
+                            var chartImage3 = chartCanvas3.toDataURL('image/png');
+                            doc.addImage(chartImage3, 'PNG', 50, 180, 100, 100);
+                            doc.save('report.pdf');
+                        });
+
                     });
                 </script>
             </div>
             <br>
-            <h5>все запросы представлены в таблице ниже 👇</h5>
+            <div class="row">
+                <div class="col-auto" style="width: 50px">
+                    <form th:method="post" th:action="@{/save_xml}">
+                        <button class="btn btn-outline-primary me-2" id="save-xslx" style="background-color: white; color: black; border-color: white" type="submit">
+                            <img src="/static/images/download.png" alt="Скачать" height="30" width="30">
+                        </button>
+                    </form>
+                </div>
+                <div class="col-auto" style="width: 500px">
+                    <h5>все запросы представлены в таблице ниже 👇</h5>
+                </div>
+            </div>
             <label id="filters" style="color: dimgrey" th:text="'Примененные фильтры: ' + ${filters}"></label>
             <div class="row">
                 <div class="col" style="padding-left: 5px">

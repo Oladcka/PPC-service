@@ -17,6 +17,7 @@ import project.models.*;
 import project.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
 
@@ -42,9 +43,12 @@ public class CleaningController {
     }
 
     private List<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
-//    private List<SearchQuery> filteredSearchQueries = new ArrayList<SearchQuery>();
     private List<Metric> metrics = new ArrayList<Metric>();
     private List<Metric> filteredMetrics = new ArrayList<Metric>();
+
+    private String addSystem;
+
+    private String filters = " ";
 
     private Clean clean;
 
@@ -138,8 +142,6 @@ public class CleaningController {
                           @RequestParam("СostClickselect") String costClickSelect, @RequestParam("СostClick") String costClick, @RequestParam("Convselect") String convSelect, @RequestParam("Conv") String conv,
                           @RequestParam("PerConvselect") String perConvSelect, @RequestParam("PerConv") String perConv, @RequestParam("СostConvselect") String costConvSelect,
                           @RequestParam("СostConv") String costConv, @RequestParam("Сonsselect") String consSelect, @RequestParam("Сons") String cons) throws JsonProcessingException {
-
-        String filters = " ";
         filteredMetrics.clear();
         for (Metric metric:metrics) {
             filteredMetrics.add(metric);
@@ -445,11 +447,76 @@ public class CleaningController {
                 }
             }
         }
-
         model.addAttribute("negPhrases", negPhrases);
         return "forecast";
     }
+    @PostMapping("/save_xml")
+    public String saveXML (Model model) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        workbook.createSheet("Отчёт");
+        XSSFSheet worksheet = workbook.getSheetAt(0);
+        if (!filteredMetrics.isEmpty()) addDataToReport(filteredMetrics, worksheet);
+        else addDataToReport(metrics, worksheet);
 
+        if(!filteredMetrics.isEmpty()) {
+            model.addAttribute("data1", createPieSrting(filteredMetrics, 1));
+            model.addAttribute("data2", createPieSrting(filteredMetrics, 2));
+            model.addAttribute("filters", filters);
+            model.addAttribute("metrics", filteredMetrics);
+        } else {
+            model.addAttribute("data1", createPieSrting(metrics, 1));
+            model.addAttribute("data2", createPieSrting(metrics, 2));
+            model.addAttribute("metrics", metrics);
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        byte[] workbookBytes = outputStream.toByteArray();
+        String workbookBase64 = Base64.getEncoder().encodeToString(workbookBytes);
+        model.addAttribute("reportXSLX", workbookBase64);
+
+        return "analysis";
+    }
+
+    private void addDataToReport (List<Metric> metrics, XSSFSheet worksheet) {
+        XSSFRow headerRow = worksheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Кампания");
+        headerRow.createCell(1).setCellValue("Группа");
+        headerRow.createCell(2).setCellValue("Поисковый запрос");
+        headerRow.createCell(3).setCellValue("Показы");
+        headerRow.createCell(4).setCellValue("Клики");
+        headerRow.createCell(5).setCellValue("CTR");
+        headerRow.createCell(6).setCellValue("Цена клика");
+        headerRow.createCell(7).setCellValue("Конверсии");
+        headerRow.createCell(8).setCellValue("%Конверсии");
+        headerRow.createCell(9).setCellValue("Цена цели");
+        headerRow.createCell(10).setCellValue("Расход");
+        for (int i = 0; i< metrics.size();i++) {
+            Metric metric = metrics.get(i);
+            int shows = metric.getShows(), clicks = metric.getClicks(), convs = metric.getConversions();
+            double cons = metric.getConsumption();
+            XSSFRow headerRow1 = worksheet.createRow(i+1);
+            headerRow1.createCell(0).setCellValue(metric.getSearchQuery().getCampaign());
+            headerRow1.createCell(1).setCellValue(metric.getSearchQuery().getAddGroup());
+            headerRow1.createCell(2).setCellValue(metric.getSearchQuery().getText());
+            headerRow1.createCell(3).setCellValue(shows);
+            headerRow1.createCell(4).setCellValue(clicks);
+            if (shows!=0)
+                headerRow1.createCell(5).setCellValue(String.format("%.2f",(1.0*clicks/shows)));
+            else headerRow1.createCell(5).setCellValue("-");
+            if (clicks!=0)
+                headerRow1.createCell(6).setCellValue(String.format("%.2f",(cons/clicks)));
+            else headerRow1.createCell(6).setCellValue("-");
+            headerRow1.createCell(7).setCellValue(convs);
+            if (clicks!=0)
+                headerRow1.createCell(8).setCellValue(String.format("%.2f",(1.0*convs/clicks)));
+            else headerRow1.createCell(8).setCellValue("-");
+            if (convs!=0)
+                headerRow1.createCell(9).setCellValue(String.format("%.2f",(cons/clicks)));
+            else headerRow1.createCell(9).setCellValue("-");
+            headerRow1.createCell(10).setCellValue(metric.getConsumption());
+        }
+    }
     private String createPieSrting (List<Metric> metrics, int chart) throws JsonProcessingException {
         Integer shows = 0, clicks = 0, convs = 0;
         for (Metric metric1:metrics) {
@@ -482,6 +549,7 @@ public class CleaningController {
         articleList.add("от");
         articleList.add("у");
     }
+
     private String[] lemmaList (String [] list) {
         String[] lemmaList = new String[list.length];
         for (int i = 0; i<list.length; i++) {

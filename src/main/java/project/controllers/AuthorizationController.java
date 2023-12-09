@@ -9,13 +9,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import project.models.Person;
 import project.models.Users;
 import project.models.enums.Role;
 import project.repositories.PersonRepository;
 import project.services.UserService;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -26,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
-public class RegistrationFormController {
+public class AuthorizationController {
     private final UserService userService;
     @Autowired
     private PersonRepository personRepository;
