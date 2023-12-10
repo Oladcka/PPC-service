@@ -52,6 +52,10 @@ public class CleaningController {
     private List<Metric> metrics = new ArrayList<Metric>();
     private List<Metric> filteredMetrics = new ArrayList<Metric>();
     private List<Metric> selectedMetrics = new ArrayList<Metric>();
+
+    private List<NegPhrase> negPhrases = new ArrayList<NegPhrase>();
+
+    private List<NegPhrase> selectedNegPhrases = new ArrayList<NegPhrase>();
     private String addSystem;
 
     private String filters = " ";
@@ -61,6 +65,8 @@ public class CleaningController {
     @PostMapping("/loadReport")
     public String loadReport (Model model, @RequestParam("fileInput") MultipartFile[] reports, @RequestParam("name") String name, @RequestParam("system") String system) throws IOException {
         searchQueries.clear();
+        filteredMetrics.clear();
+        selectedMetrics.clear();
         metrics.clear();
         Clean clean1 = new Clean();
         User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -82,6 +88,7 @@ public class CleaningController {
                         searchQuery.setCampaign(row.getCell(1).toString());
                         searchQuery.setAddGroup(row.getCell(3).toString());
                         searchQuery.setKeyword(row.getCell(5).toString());
+                        searchQuery.setId(i);
                         searchQueries.add(searchQuery);
                         Metric metric = new Metric();
                         metric.setClicks(Integer.parseInt(row.getCell(9).toString().substring(0, (row.getCell(9).toString().length() - 2))));
@@ -130,6 +137,7 @@ public class CleaningController {
                             searchQuery.setCampaign(csvRecrd.get(0).toString());
                             searchQuery.setAddGroup(csvRecrd.get(1).toString());
                             searchQuery.setKeyword(csvRecrd.get(2).toString());
+                            searchQuery.setId(rowIndex);
                             searchQueries.add(searchQuery);
                             Metric metric = new Metric();
                             metric.setClicks(Integer.parseInt(csvRecrd.get(5).toString()));
@@ -456,10 +464,11 @@ public class CleaningController {
     @PostMapping("/forecast")
     public String forecast (Model model) throws IOException {
         List<SearchQuery> badSearchQueries = new ArrayList<SearchQuery>();
-        List<NegPhrase> negPhrases = new ArrayList<>();
+        negPhrases.clear();
         List<String> negPhrasesTexts = new ArrayList<String>();
         List<String> articleList = new ArrayList<String>();
         articleList(articleList);
+        int index = 0;
         for (SearchQuery searchQuery: searchQueries) {
             String[] text = searchQuery.getText().split("\\s+");
             String[] key = searchQuery.getKeyword().split("\\s+");
@@ -475,7 +484,9 @@ public class CleaningController {
                     negPhrase.setText(negPhrasesText);
                     negPhrase.setStatus("new");
                     negPhrase.setSearchQuery(searchQuery);
+                    negPhrase.setId(index);
                     negPhrases.add(negPhrase);
+                    index++;
                 }
             }
         }
@@ -522,12 +533,19 @@ public class CleaningController {
                 System.out.println(metric.getSearchQuery().getText());
                 selectedMetrics.add(metric);
             }
+            Iterator<Metric> iterator = metrics.iterator();
+            while (iterator.hasNext()) {
+                Metric metric = iterator.next();
+                if (selectedMetrics1.contains(metric)) {
+                    iterator.remove();
+                }
+            }
             if (!filteredMetrics.isEmpty()) {
-                Iterator<Metric> iterator = filteredMetrics.iterator();
-                while (iterator.hasNext()) {
-                    Metric metric = iterator.next();
+                Iterator<Metric> iterator1 = filteredMetrics.iterator();
+                while (iterator1.hasNext()) {
+                    Metric metric = iterator1.next();
                     if (selectedMetrics1.contains(metric)) {
-                        iterator.remove();
+                        iterator1.remove();
                     }
                 }
                 model.addAttribute("data1", createPieSrting(filteredMetrics, 1));
@@ -536,13 +554,6 @@ public class CleaningController {
                 model.addAttribute("metrics", filteredMetrics);
             }
             else {
-                Iterator<Metric> iterator = metrics.iterator();
-                while (iterator.hasNext()) {
-                    Metric metric = iterator.next();
-                    if (selectedMetrics1.contains(metric)) {
-                        iterator.remove();
-                    }
-                }
                 model.addAttribute("data1", createPieSrting(metrics, 1));
                 model.addAttribute("data2", createPieSrting(metrics, 2));
                 model.addAttribute("metrics", metrics);
@@ -552,6 +563,47 @@ public class CleaningController {
             System.out.println(e.getMessage());
             return "analysis";
         }
+    }
+    @PostMapping("/addWords")
+    public String addWords(Model model, @RequestParam("selectedNegPhraseIds") String selectedNegPhraseIds) {
+        List<String> negIds = new ArrayList<>();
+        try {
+            negIds = new ObjectMapper().readValue(selectedNegPhraseIds, new TypeReference<List<String>>() {});
+            final List<String> negIdsCopy = negIds;
+            for (String negId: negIdsCopy) {
+                System.out.println(negId);
+            }
+            for (NegPhrase negPhrase: negPhrases) {
+                System.out.println(negPhrase.getId().toString());
+            }
+            List<NegPhrase> selectedNegPhrases1 = negPhrases.stream()
+                    .filter(negPhrase -> negIdsCopy.contains(String.valueOf(negPhrase.getId())))
+                    .collect(Collectors.toList());
+//            List<NegPhrase> selectedNegPhrases1 = negPhrases.stream()
+//                    .filter(negPhrase -> negIdsCopy.stream().anyMatch(id -> id.equals(String.valueOf(negPhrase.getId()))))
+//                    .collect(Collectors.toList());
+            for (NegPhrase negPhrase :selectedNegPhrases1) {
+                selectedNegPhrases.add(negPhrase);
+            }
+            Iterator<NegPhrase> iterator = negPhrases.iterator();
+            while (iterator.hasNext()) {
+                NegPhrase negPhrase = iterator.next();
+                if (selectedNegPhrases1.contains(negPhrase)) {
+                    iterator.remove();
+                }
+            }
+            model.addAttribute("negPhrases", negPhrases);
+            return "forecast";
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return "forecast";
+        }
+    }
+    @PostMapping("/createNegList")
+    public String createNegList (Model model) {
+        model.addAttribute("negPhrases", selectedNegPhrases);
+        model.addAttribute("searchQueries", selectedMetrics);
+        return "negList";
     }
 
     private void addDataToReport (List<Metric> metrics, XSSFSheet worksheet) {

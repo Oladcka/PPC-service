@@ -148,7 +148,7 @@
 
                         // Функция для выделения или снятия выделения со всех чекбоксов
                         function toggleAllCheckboxes() {
-                            const checkboxes = document.querySelectorAll('input[name="selectedMetrics"]');
+                            const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
 
                             checkboxes.forEach((checkbox) => {
                                 checkbox.checked = selectAllCheckbox.checked;
@@ -181,7 +181,7 @@
                                 <td th:text="${negPhrase.getSearchQuery.getText()}"></td>
                                 <td th:text="${negPhrase.getSearchQuery.getKeyword()}"></td>
                                 <td th:text="${negPhrase.getText()}"></td>
-                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedMetrics" value="${metric.getId()}" /></td>
+                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedNegPhrases" th:value="${negPhrase.getId()}" /></td>
                             </tr>
                         </div>
                         </tbody>
@@ -212,14 +212,27 @@
                             <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/addWords}">
                                 <div class="row">
                                     <div class="col">
+                                        <input type="hidden" name="selectedNegPhraseIds" id="selectedNegPhraseIds" />
                                         <button class="w-100 btn btn-lg btn-light" id="addButton" style = "background-color: #ffc24b; border-color:white;color: black; display: none; font-size: smaller" type="submit">В минус-фразы</button>
                                     </div>
                                 </div>
                             </form>
+                            <script>
+                                document.getElementById('addButton').addEventListener('click', function() {
+                                    // Get all the selected checkboxes
+                                    var selectedCheckboxes = document.querySelectorAll('input[name="selectedNegPhrases"]:checked');
+
+                                    var negPhraseIds = Array.from(selectedCheckboxes).map(function(checkbox) {
+                                        return checkbox.value;
+                                    });
+
+                                    document.getElementById('selectedNegPhraseIds').value = JSON.stringify(negPhraseIds);
+                                });
+                            </script>
                         </div>
                     <script>
                         // Отслеживание изменений состояния чекбоксов
-                        const checkboxes = document.querySelectorAll('input[name="selectedMetrics"]');
+                        const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
                         checkboxes.forEach((checkbox) => {
                             checkbox.addEventListener('change', updateButtonVisibility);
                         });
@@ -228,7 +241,7 @@
                         function updateButtonVisibility() {
                             const button = document.getElementById('addButton');
                             const checkedCheckboxes = document.querySelectorAll(
-                                'input[name="selectedMetrics"]:checked'
+                                'input[name="selectedNegPhrases"]:checked'
                             );
 
                             // Проверка количества выбранных чекбоксов и установка видимости кнопки

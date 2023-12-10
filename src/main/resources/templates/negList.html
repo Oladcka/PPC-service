@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <title>cleaning</title>
+    <meta charset="utf-8">
+    <!-- Настройка viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>...</title>
+    <!-- Bootstrap CSS (jsDelivr CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Bootstrap Bundle JS (jsDelivr CDN) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <style>
+        #topBtn {
+            display: none;
+            position: fixed;
+            font-size: 24px;
+            align-items: center;
+            font-weight: bold;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #cbcdcd;
+            color: white;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        #topBtn:hover {
+            background-color: #ffc24b;
+            color: white;
+        }
+        .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sortable:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .sortable.asc:after {
+            background-image: url("/static/images/up.png"); /* Иконка вверх при возрастающей сортировке */
+        }
+
+        .sortable.desc:after {
+            background-image: url("/static/images/down.png"); /* Иконка вниз при убывающей сортировке */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        window.onscroll = function() {scrollFunction()};
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
+                document.getElementById("topBtn").style.display = "block";
+            } else {
+                document.getElementById("topBtn").style.display = "none";
+            }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+        $(document).ready(function() {
+            $('.sortable').click(function() {
+                var table = $(this).closest('table');
+                var rows = table.find('tbody > tr').get();
+                var index = $(this).index();
+                var isAscending = $(this).hasClass('asc');
+                var isDescending = $(this).hasClass('desc');
+
+                rows.sort(function(a, b) {
+                    var aValue = $(a).find('td').eq(index).text();
+                    var bValue = $(b).find('td').eq(index).text();
+
+                    if ($.isNumeric(aValue) && $.isNumeric(bValue)) {
+                        aValue = parseFloat(aValue);
+                        bValue = parseFloat(bValue);
+                    }
+
+                    if (isAscending) {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                });
+
+                table.find('th').removeClass('asc desc');
+                if (isAscending) {
+                    $(this).toggleClass('asc desc');
+                } else if (isDescending) {
+                    $(this).toggleClass('asc');
+                } else {
+                    $(this).toggleClass('asc');
+                }
+
+                table.find('tbody').empty().append(rows);
+            });
+        });
+        function applySelectedOption(searchQueryId) {
+            var selectedOption = document.getElementById('select-' + searchQueryId).value;
+            var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
+
+            if (selectedOption === 'option1') {
+                // document.getElementById('editableCell-' + searchQueryId).textContent = cellText.replace(/^! /, '');
+                const cellElement = document.getElementById('editableCell-' + searchQueryId);
+                const cellText = cellElement.textContent;
+
+                // Удаляем символы "!" если они являются первым символом строки
+                const withoutExclamation = cellText.replace(/^! /, '');
+
+                // Удаляем двойные кавычки "" если вся строка взята в них
+                const withoutQuotes = withoutExclamation.replace(/^"(.*)"$/, '$1');
+
+                // Удаляем квадратные скобки [] если вся строка взята в них
+                const withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
+
+                // Обновляем содержимое ячейки с отредактированным текстом
+                cellElement.textContent = withoutBrackets;
+            } else if (selectedOption === 'option2') {
+                const previousValue = selectElement.value;
+                // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
+                if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
+                    document.getElementById('editableCell-' + searchQueryId).textContent = '! ' + cellText;
+                }
+                else {
+                    alert('Ошибка! Строка должна содержать только одно слово.');
+                    // Восстанавливаем предыдущее значение <select>
+                    selectElement.value = previousValue;
+                }
+            } else if (selectedOption === 'option3') {
+                // Берем фразу в "", если еще не взята в ""
+                if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
+                    document.getElementById('editableCell-' + searchQueryId).textContent = '"' + cellText + '"';
+                }
+            } else if (selectedOption === 'option4') {
+                // Берем фразу в [], если еще не взята в []
+                if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
+                    document.getElementById('editableCell-' + searchQueryId).textContent = '[' + cellText + ']';
+                }
+            }
+        }
+        function applySelectedOption1(searchQueryId) {
+            var selectedOption = document.getElementById('select-' + searchQueryId).value;
+            var cellText = document.getElementById('editable-' + searchQueryId).textContent;
+
+            if (selectedOption === 'option1') {
+                // Удаляем символы перед строкой, если есть "!"
+                document.getElementById('editable-' + searchQueryId).textContent = cellText.replace(/^! /, '');
+            } else if (selectedOption === 'option2') {
+                // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
+                if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
+                    document.getElementById('editable-' + searchQueryId).textContent = '! ' + cellText;
+                }
+            } else if (selectedOption === 'option3') {
+                // Берем фразу в "", если еще не взята в ""
+                if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
+                    document.getElementById('editable-' + searchQueryId).textContent = '"' + cellText + '"';
+                }
+            } else if (selectedOption === 'option4') {
+                // Берем фразу в [], если еще не взята в []
+                if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
+                    document.getElementById('editable-' + searchQueryId).textContent = '[' + cellText + ']';
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<header th:insert ="~{fragments/header :: header}"></header>
+
+<div class="container" style="margin-right: 100px">
+    <div class="row">
+        <div class="col">
+            <br>
+            <h5>Список минус-фраз:</h5>
+            <br>
+            <div style="width: 600px">
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col" style="text-align: right">
+                        <label> </label>
+                        <label style="color: dimgrey">
+                            <input type="checkbox" id="selectAllCheckbox"> Выделить все
+                        </label>
+                    </div>
+                    <script>
+                        // Обработка изменений состояния чекбокса "Выделить все"
+                        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                        selectAllCheckbox.addEventListener('change', toggleAllCheckboxes);
+
+                        // Функция для выделения или снятия выделения со всех чекбоксов
+                        function toggleAllCheckboxes() {
+                            const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
+
+                            checkboxes.forEach((checkbox) => {
+                                checkbox.checked = selectAllCheckbox.checked;
+                            });
+
+                            updateButtonVisibility();
+                        }
+                    </script>
+                </div>
+            </div>
+            <div class="row">
+                <div style="max-height: 400px; overflow-x: scroll; width: 600px">
+                    <table class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                        <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+                        <tr style="font-weight: normal; border-top: none">
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
+                            <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Тип соответствия</th>
+                            <th scope="col" style="width: 40px"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tbody>
+<!--                        <div th:each="negPhrase : ${negPhrases}">-->
+                            <tr th:each="negPhrase : ${negPhrases}">
+                                <td th:text="${negPhrase.getSearchQuery.getCampaign()}"></td>
+                                <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
+                                <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}"></td>
+                                <td>
+                                    <select required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
+                                        <option value="option1">Широкое</option>
+                                        <option value="option2">! Форма слова</option>
+                                        <option value="option3">"" Кол-во слов</option>
+                                        <option value="option4">[] Порядок слов</option>
+                                    </select>
+                                </td>
+                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedNegPhrases" th:value="${negPhrase.getId()}" /></td>
+                            </tr>
+                            <tr th:each="searchQuery : ${searchQueries}">
+                                <td th:text="${searchQuery.getSearchQuery.getCampaign()}"></td>
+                                <td th:text="${searchQuery.getSearchQuery.getAddGroup()}"></td>
+                                <td contenteditable="true" th:text="${searchQuery.getSearchQuery.getText()}" th:id="'editableCell-' + ${searchQuery.getSearchQuery.getId()}"></td>
+                                <td>
+                                    <select required th:id="'select-' + ${searchQuery.getSearchQuery.getId()}" th:onchange="'applySelectedOption(' + ${searchQuery.getSearchQuery.getId()} + ')'" >
+                                        <option value="option1">Широкое</option>
+                                        <option value="option2">! Форма слова</option>
+                                        <option value="option3">"" Кол-во слов</option>
+                                        <option value="option4">[] Порядок слов</option>
+                                    </select>
+                                </td>
+                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedNegPhrases" th:value="${searchQuery.getId()}" /></td>
+                            </tr>
+<!--                        </div>-->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(negPhrases)}">
+                <div class="row">
+                    <br>
+                    <label style="text-align: center; color: firebrick">Нет спрогнозированных минус-слов</label>
+                    <br>
+                </div>
+            </div>
+            <div style="width: 600px">
+                <div class="row" style="text-align: left">
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col">
+                        <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/createNegList}">
+                            <div class="row">
+                                <div class="col">
+                                    <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type="submit">Составить список</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col">
+                        <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/addWords}">
+                            <div class="row">
+                                <div class="col">
+                                    <input type="hidden" name="selectedNegPhraseIds" id="selectedNegPhraseIds" />
+                                    <button class="w-100 btn btn-lg btn-light" id="addButton" style = "background-color: #ffc24b; border-color:white;color: black; display: none; font-size: smaller" type="submit">В минус-фразы</button>
+                                </div>
+                            </div>
+                        </form>
+                        <script>
+                            document.getElementById('addButton').addEventListener('click', function() {
+                                // Get all the selected checkboxes
+                                var selectedCheckboxes = document.querySelectorAll('input[name="selectedNegPhrases"]:checked');
+
+                                var negPhraseIds = Array.from(selectedCheckboxes).map(function(checkbox) {
+                                    return checkbox.value;
+                                });
+
+                                document.getElementById('selectedNegPhraseIds').value = JSON.stringify(negPhraseIds);
+                            });
+                        </script>
+                    </div>
+                    <script>
+                        // Отслеживание изменений состояния чекбоксов
+                        const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
+                        checkboxes.forEach((checkbox) => {
+                            checkbox.addEventListener('change', updateButtonVisibility);
+                        });
+
+                        // Функция для обновления видимости кнопки
+                        function updateButtonVisibility() {
+                            const button = document.getElementById('addButton');
+                            const checkedCheckboxes = document.querySelectorAll(
+                                'input[name="selectedNegPhrases"]:checked'
+                            );
+
+                            // Проверка количества выбранных чекбоксов и установка видимости кнопки
+                            if (checkedCheckboxes.length > 0) {
+                                button.style.display = 'block';
+                            } else {
+                                button.style.display = 'none';
+                            }
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+    </div>
+    </div>
+</div>
+</div>
+<button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
+<div th:replace="fragments/footer :: footer"></div>
+<script>
+    function applySelectedOption(searchQueryId) {
+        var selectedOption = document.getElementById('select-' + searchQueryId).value;
+        var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
+
+        if (selectedOption === 'option1') {
+            // Удаляем символы перед строкой, если есть "!"
+            document.getElementById('editableCell-' + searchQueryId).textContent = cellText.replace(/^! /, '');
+        } else if (selectedOption === 'option2') {
+            // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
+            if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
+                document.getElementById('editableCell-' + searchQueryId).textContent = '! ' + cellText;
+            }
+        } else if (selectedOption === 'option3') {
+            // Берем фразу в "", если еще не взята в ""
+            if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
+                document.getElementById('editableCell-' + searchQueryId).textContent = '"' + cellText + '"';
+            }
+        } else if (selectedOption === 'option4') {
+            // Берем фразу в [], если еще не взята в []
+            if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
+                document.getElementById('editableCell-' + searchQueryId).textContent = '[' + cellText + ']';
+            }
+        }
+    }
+</script>
+</body>
+
+</html>
