@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.Objects;
 
 @Entity(name = "metric")
 @AllArgsConstructor
@@ -36,5 +37,23 @@ public class Metric {
 
     @Column(nullable = false)
     private String currencyCode;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Metric other = (Metric) obj;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id);
+    }
 }
 

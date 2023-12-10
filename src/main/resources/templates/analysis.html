@@ -69,6 +69,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+
         window.onscroll = function() {scrollFunction()};
 
         function scrollFunction() {
@@ -157,7 +158,6 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'report.xlsx';
 
-            /* Добавьте ссылку в документ и автоматически нажмите на нее */
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -385,6 +385,7 @@
                 </div>
                 <script>
 
+
                     document.getElementById('save-pdf').addEventListener('click', function() {
                         var doc = new jsPDF();
 
@@ -458,6 +459,7 @@
                     <table class="table table-striped table-sm table-b table-bordered" style="text-align: left">
                         <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
                         <tr style="font-weight: normal; border-top: none">
+                            <th scope="col" style="visibility: hidden"></th>
                             <th scope="col" style="width: 40px"></th>
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
                             <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
@@ -477,7 +479,8 @@
                         <tbody>
                            <div th:each="metric : ${metrics}">
                                 <tr>
-                                    <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedMetrics" value="${metric.getId()}" /></td>
+                                    <td th:value="${metric.getId()}" style="visibility: hidden"></td>
+                                    <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedMetrics" th:value="${metric.getId()}" /></td>
                                     <td th:text="${metric.getSearchQuery.getCampaign()}"></td>
                                     <td th:text="${metric.getSearchQuery.getAddGroup()}"></td>
                                     <td th:text="${metric.getSearchQuery.getText()}"></td>
@@ -528,12 +531,27 @@
                     </div>
                     <div class="col">
                         <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/addQueries}">
+                            <input type="hidden" name="selectedMetricIds" id="selectedMetricIds" />
                             <div class="row">
                                 <div class="col">
                                     <button class="w-100 btn btn-lg btn-light" id="addButton" style = "background-color: #ffc24b; border-color:white;color: black; display: none; font-size: smaller" type="submit">В минус-фразы</button>
                                 </div>
                             </div>
                         </form>
+                        <script>
+                            document.getElementById('addButton').addEventListener('click', function() {
+                                // Get all the selected checkboxes
+                                var selectedCheckboxes = document.querySelectorAll('input[name="selectedMetrics"]:checked');
+
+                                // Extract the metric IDs from the checkboxes and create an array
+                                var metricIds = Array.from(selectedCheckboxes).map(function(checkbox) {
+                                    return checkbox.value;
+                                });
+
+                                // Set the metric IDs as the value of the hidden input field
+                                document.getElementById('selectedMetricIds').value = JSON.stringify(metricIds);
+                            });
+                        </script>
                     </div>
                     <script>
                         // Отслеживание изменений состояния чекбоксов

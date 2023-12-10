@@ -1,5 +1,9 @@
 package project.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -14,14 +18,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import project.models.*;
+import project.repositories.MetricRepository;
 import project.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayOutputStream;
 
-import java.io.IOException;
+import java.io.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.github.demidko.aot.WordformMeaning.lookupForMeanings;
 
@@ -30,6 +35,8 @@ public class CleaningController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private MetricRepository metricRepository;
     @GetMapping("/")
     public String home() {
         return "home";
@@ -38,14 +45,13 @@ public class CleaningController {
     public String showBriefs(Authentication authentication, Model model){
         User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Users user = userRepository.findByLogin(user1.getUsername());
-//        model.addAttribute("briefs", briefRepository.findAllByClient(user));
         return "loadReport";
     }
 
     private List<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
     private List<Metric> metrics = new ArrayList<Metric>();
     private List<Metric> filteredMetrics = new ArrayList<Metric>();
-
+    private List<Metric> selectedMetrics = new ArrayList<Metric>();
     private String addSystem;
 
     private String filters = " ";
@@ -56,36 +62,18 @@ public class CleaningController {
     public String loadReport (Model model, @RequestParam("fileInput") MultipartFile[] reports, @RequestParam("name") String name, @RequestParam("system") String system) throws IOException {
         searchQueries.clear();
         metrics.clear();
-        XSSFWorkbook workbookNew = new XSSFWorkbook(reports[0].getInputStream());
-//        XSSFSheet worksheetNew = workbookNew.getSheetAt(0);
+        Clean clean1 = new Clean();
+        User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Users user = userRepository.findByLogin(user1.getUsername());
+        clean1.setUser(user);
+        clean1.setProject(name);
+        clean1.setAdvertisingSystem(system);
 
-        // создание самого excel файла в памяти
-//        XSSFWorkbook workbookPrev = new XSSFWorkbook();
-//        // создание листа с названием "Просто лист"
-//        XSSFSheet worksheetPrev = workbookPrev.createSheet("Лист 1");
-//
-        String UPLOAD_DIRECTORY = System.getProperty("user.dir") + "/src/main/resources/static/tables/table.xlsx";
-//        FileOutputStream out = new FileOutputStream(new File(UPLOAD_DIRECTORY));
-
-//        for (int i = 0; i < worksheetNew.getPhysicalNumberOfRows(); i++) {
-//            XSSFRow rowPrev = worksheetPrev.createRow(worksheetNew.getPhysicalNumberOfRows()+1);
-//            XSSFRow rowNew = worksheetNew.getRow(i);
-//            for( int k = 0; k < rowNew.getPhysicalNumberOfCells(); k++) {
-//               rowPrev.createCell(i).setCellValue(rowNew.getCell(i).toString());
-//                Cell cell = rowPrev.createCell(i);
-//                cell.setCellValue(rowNew.getCell(i));
-//            }
-//        }
-
+    try {
         if (system.contains("Яндекс")) {
-            Clean clean1 = new Clean();
-            User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Users user = userRepository.findByLogin(user1.getUsername());
-            clean1.setUser(user);
-            clean1.setProject(name);
-            clean1.setAdvertisingSystem("Яднекс");
+            XSSFWorkbook workbookNew = new XSSFWorkbook(reports[0].getInputStream());
             if (checkYandexReport(workbookNew)) {
-                String code = workbookNew.getSheetAt(0).getRow(4).getCell(10).toString().substring(8,10);
+                String code = workbookNew.getSheetAt(0).getRow(4).getCell(10).toString().substring(8, 10);
                 for (int i = 4; i < workbookNew.getSheetAt(0).getPhysicalNumberOfRows(); i++) {
                     XSSFRow row = workbookNew.getSheetAt(0).getRow(i);
                     if (row.getCell(7).toString().equals("фраза")) {
@@ -96,14 +84,16 @@ public class CleaningController {
                         searchQuery.setKeyword(row.getCell(5).toString());
                         searchQueries.add(searchQuery);
                         Metric metric = new Metric();
-                        metric.setClicks(Integer.parseInt(row.getCell(9).toString().substring(0,(row.getCell(9).toString().length()-2))));
-                        metric.setShows(Integer.parseInt(row.getCell(8).toString().substring(0,(row.getCell(8).toString().length()-2))));
+                        metric.setClicks(Integer.parseInt(row.getCell(9).toString().substring(0, (row.getCell(9).toString().length() - 2))));
+                        metric.setShows(Integer.parseInt(row.getCell(8).toString().substring(0, (row.getCell(8).toString().length() - 2))));
                         String conversions = row.getCell(11).toString();
-                        if (!conversions.equals("-")) metric.setConversions(Integer.parseInt(conversions.substring(0,(row.getCell(11).toString().length()-2))));
+                        if (!conversions.equals("-"))
+                            metric.setConversions(Integer.parseInt(conversions.substring(0, (row.getCell(11).toString().length() - 2))));
                         else metric.setConversions(0);
                         metric.setConsumption(Float.valueOf(row.getCell(10).toString()));
                         metric.setCurrencyCode(code);
                         metric.setSearchQuery(searchQuery);
+                        metric.setId(i);
                         metrics.add(metric);
                     }
                 }
@@ -111,15 +101,59 @@ public class CleaningController {
                 model.addAttribute("data2", createPieSrting(metrics, 2));
                 model.addAttribute("metrics", metrics);
                 return "analysis";
-            }
-            else {
+            } else {
                 model.addAttribute("error", "ошибка");
                 return "loadReport";
             }
         } else {
-            if (checkGoogleReport(workbookNew))  return "loadReport";
-            else return "home";
-        }
+
+            CSVFormat csvFormat = CSVFormat.EXCEL.withDelimiter('\t');
+            try (InputStream inputStream = reports[0].getInputStream();
+                 Reader reader = new InputStreamReader(inputStream, "UTF-16");
+                 CSVParser csvParser = new CSVParser(reader, csvFormat)) {
+                    int rowIndex = 0;
+                    for (CSVRecord csvRecrd : csvParser) {
+                        if (rowIndex == 2){
+                            try {
+                                if (!(csvRecrd.get(0).toString().equals("Кампания") & csvRecrd.get(1).toString().equals("Группа объявлений") & csvRecrd.get(2).toString().equals("Ключевые слова для поисковой рекламы") & csvRecrd.get(3).toString().equals("Поисковый запрос") & csvRecrd.get(4).toString().equals("Показы") & csvRecrd.get(5).toString().equals("Kлики") & csvRecrd.get(6).toString().equals("Все конв.") & csvRecrd.get(7).toString().equals("Код валюты") & csvRecrd.get(8).toString().equals("Расходы"))) {
+                                    model.addAttribute("error", "ошибка");
+                                    return "loadReport";
+                                }
+                            } catch (Exception e) {
+                                model.addAttribute("error", "ошибка");
+                                return "loadReport";
+                            }
+                        }
+                        if (rowIndex >= 3) {
+                            SearchQuery searchQuery = new SearchQuery();
+                            searchQuery.setText(csvRecrd.get(3).toString());
+                            searchQuery.setCampaign(csvRecrd.get(0).toString());
+                            searchQuery.setAddGroup(csvRecrd.get(1).toString());
+                            searchQuery.setKeyword(csvRecrd.get(2).toString());
+                            searchQueries.add(searchQuery);
+                            Metric metric = new Metric();
+                            metric.setClicks(Integer.parseInt(csvRecrd.get(5).toString()));
+                            metric.setShows(Integer.parseInt(csvRecrd.get(4).toString()));
+                            metric.setConversions(Math.round(Float.valueOf(csvRecrd.get(6).toString().replace(",", "."))));
+                            metric.setConsumption(Float.valueOf(csvRecrd.get(8).toString().replace(",", ".")));
+                            metric.setCurrencyCode(csvRecrd.get(7));
+                            metric.setSearchQuery(searchQuery);
+                            metric.setId(rowIndex);
+                            metrics.add(metric);
+
+                        }
+                        rowIndex++;
+                    }
+                    model.addAttribute("data1", createPieSrting(metrics, 1));
+                    model.addAttribute("data2", createPieSrting(metrics, 2));
+                    model.addAttribute("metrics", metrics);
+                    return "analysis";
+                }
+            }
+    } catch (Exception e) {
+        model.addAttribute("error", "ошибка");
+        return "loadReport";
+    }
     }
     private boolean checkYandexReport (XSSFWorkbook workbook) {
         try {
@@ -132,9 +166,7 @@ public class CleaningController {
             return false;
         }
     }
-    private boolean checkGoogleReport (XSSFWorkbook workbook) {
-        return true;
-    }
+
 
     @PostMapping("/filter")
     public String filter (Model model, @RequestParam("campaign") String campaign, @RequestParam("group") String group, @RequestParam("query") String query, @RequestParam("Showsselect") String showsselect,
@@ -476,6 +508,50 @@ public class CleaningController {
         model.addAttribute("reportXSLX", workbookBase64);
 
         return "analysis";
+    }
+    @PostMapping("/addQueries")
+    public String addQueries(Model model, @RequestParam("selectedMetricIds") String selectedMetricIds) {
+        List<String> metricIds = new ArrayList<>();
+        try {
+            metricIds = new ObjectMapper().readValue(selectedMetricIds, new TypeReference<List<String>>() {});
+            final List<String> metricIdsCopy = metricIds;
+                List<Metric> selectedMetrics1 = metrics.stream()
+                        .filter(metric -> metricIdsCopy.contains(String.valueOf(metric.getId())))
+                        .collect(Collectors.toList());
+            for (Metric metric:selectedMetrics1) {
+                System.out.println(metric.getSearchQuery().getText());
+                selectedMetrics.add(metric);
+            }
+            if (!filteredMetrics.isEmpty()) {
+                Iterator<Metric> iterator = filteredMetrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (selectedMetrics1.contains(metric)) {
+                        iterator.remove();
+                    }
+                }
+                model.addAttribute("data1", createPieSrting(filteredMetrics, 1));
+                model.addAttribute("data2", createPieSrting(filteredMetrics, 2));
+                model.addAttribute("filters", filters);
+                model.addAttribute("metrics", filteredMetrics);
+            }
+            else {
+                Iterator<Metric> iterator = metrics.iterator();
+                while (iterator.hasNext()) {
+                    Metric metric = iterator.next();
+                    if (selectedMetrics1.contains(metric)) {
+                        iterator.remove();
+                    }
+                }
+                model.addAttribute("data1", createPieSrting(metrics, 1));
+                model.addAttribute("data2", createPieSrting(metrics, 2));
+                model.addAttribute("metrics", metrics);
+            }
+            return "analysis";
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return "analysis";
+        }
     }
 
     private void addDataToReport (List<Metric> metrics, XSSFSheet worksheet) {
