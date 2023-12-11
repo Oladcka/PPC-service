@@ -79,7 +79,7 @@
         <a class="nav-link" style="background-color: #ffc24b; color: black">Сообщения</a>
       </li>
       <li th:if="${#authorization.expression('hasRole(''ROLE_BOSS'')')}">
-        <a class="nav-link" style="background-color: #ffc24b; color: black">Сотрудники</a>
+        <a class="nav-link" th:href="@{/workers}" style="background-color: #ffc24b; color: black">Сотрудники</a>
       </li>
     </ul>
   </nav>

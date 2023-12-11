@@ -46,6 +46,9 @@ public class Users implements UserDetails {
         return login;
     }
 
+    public boolean getActive() {
+        return active;
+    }
 
     public Long getId() {
         return id;
