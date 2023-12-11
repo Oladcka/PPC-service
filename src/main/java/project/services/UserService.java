@@ -37,7 +37,7 @@ public class UserService {
             return false;
         }
         user.setPassword(passwordEncoder.encode(password));
-        user.setActive(true);
+        user.setActive(false);
         userRepository.save(user);
         Users savedUser = userRepository.save(user);
         Person person = new Person();
@@ -46,10 +46,6 @@ public class UserService {
         person.setSurname(surname);
             String UPLOAD_DIRECTORY = "D:/Учёба/КП/CProject/src/main/resources/static/images/";
             Path fileNameAndPath = Paths.get(UPLOAD_DIRECTORY+images[0].getOriginalFilename());
-//            StringBuilder fileNames = new StringBuilder();
-//            File file = new File(UPLOAD_DIRECTORY + images[0].getOriginalFilename());
-//            file.createNewFile();
-//            Files.write(fileNameAndPath, images[0].getBytes());
         try {
             if (!Files.exists(fileNameAndPath)) {
                 Files.createDirectories(fileNameAndPath.getParent()); // Создаем родительскую директорию, если она не существует
@@ -63,19 +59,12 @@ public class UserService {
             fio.close();
         }
         catch (Exception e) {
-            return false;
-            // Обработка ошибок
+            person.setPhoto("../../images/acc.png" + images[0].getOriginalFilename());
+            personRepository.save(person);
+            return true;
         }
-//            Files.write(fileNameAndPath, images[0].getBytes());
             person.setPhoto("../../images/" + images[0].getOriginalFilename());
             personRepository.save(person);
-//            for (MultipartFile image : images) {
-//                fileNames.append(image.getOriginalFilename()).append(", ");
-//                Files.write(fileNameAndPath, image.getBytes());
-//                person.setPhoto("../../images/" + image.getOriginalFilename());
-//                personRepository.save(person);
-//            }
-
         return true;
     }
 }

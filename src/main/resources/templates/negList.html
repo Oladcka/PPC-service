@@ -66,6 +66,11 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // var negPhraseArray1 = [];
+        // var searchQueryArray1 = [];
+        // var negPhraseArray2 = [];
+        // var searchQueryArray2 = [];
+
         window.onscroll = function() {scrollFunction()};
 
         function scrollFunction() {
@@ -132,7 +137,8 @@
                     cell.style.color = 'red';
                 }
             });
-
+            // var negPhraseArray1 = [[${negPhrases}]];
+            // var searchQueryArray1 = [[${searchQueries}]];
         });
         function applySelectedOption(searchQueryId) {
             var selectedElement = document.getElementById('select-' + searchQueryId);
@@ -268,6 +274,91 @@
                 }
             }
         }
+        // function endCleaning() {
+        //     var negPhraseArray1 = [];
+        //     var searchQueryArray1 = [];
+        //     var negPhraseArray2 = [];
+        //     var searchQueryArray2 = [];
+        //
+        //     // Проходим по каждой строке в первой таблице
+        //     $("#first-table tbody tr").each(function () {
+        //         var tds = tr.childNodes;
+        //         if (tds[6] === 'searchQuery') searchQueryArray1.push(tds[7]);
+        //         else negPhraseArray1.push(tds[7]);
+        //     });
+        //
+        //     $("#second-table tbody tr").each(function () {
+        //         var tds = tr.childNodes;
+        //         if (tds[6] === 'searchQuery') searchQueryArray2.push(tds[7]);
+        //         else negPhraseArray2.push(tds[7]);
+        //     });
+        //
+        //     // Отправляем массивы на сервер
+        //     $.ajax({
+        //         url: "/endCleaning",
+        //         method: "POST",
+        //         data: JSON.stringify({ negPhrases1: negPhraseArray1, searchQueries1: searchQueryArray1, negPhrases2: negPhraseArray2, searchQueries2: searchQueryArray2 }),
+        //         contentType: "application/json",
+        //         success: function (response) {
+        //             // Обработка успешного ответа от сервера
+        //         },
+        //         error: function (error) {
+        //             // Обработка ошибки
+        //         },
+        //     });
+        // }
+        // function endCleaning() {
+        //     var negPhraseArray1 = [];
+        //     var searchQueryArray1 = [];
+        //     var negPhraseArray2 = [];
+        //     var searchQueryArray2;
+        //
+        //     // Проходим по каждой строке в первой таблице
+        //     $("#first-table tbody tr").each(function () {
+        //         var tds = $(this).find("td"); // Получаем все ячейки в текущей строке
+        //         var objectType = $(tds[7]).attr("text"); // Получаем тип объекта ("negPhrase" или "searchQuery")
+        //         var objectId = $(tds[6]).text(); // Получаем ID объекта
+        //
+        //         if (objectType === 'searchQuery') {
+        //             searchQueryArray1.push(objectId);
+        //         } else {
+        //             negPhraseArray1.push(objectId);
+        //         }
+        //     });
+        //
+        //     // Проходим по каждой строке во второй таблице
+        //     $("#second-table tbody tr").each(function () {
+        //         var tds = $(this).find("td"); // Получаем все ячейки в текущей строке
+        //         var objectType = $(tds[7]).attr("text"); // Получаем тип объекта ("negPhrase" или "searchQuery")
+        //         var objectId = $(tds[6]).text(); // Получаем ID объекта
+        //
+        //         if (objectType === 'searchQuery') {
+        //             searchQueryArray2.push(objectId);
+        //         } else {
+        //             negPhraseArray2.push(objectId);
+        //         }
+        //     });
+        //
+        //     // Отправляем массивы на сервер
+        //     $.ajax({
+        //         url: "/endCleaning",
+        //         method: "POST",
+        //         data: JSON.stringify({
+        //             negPhrases1: negPhraseArray1,
+        //             searchQueries1: searchQueryArray1,
+        //             negPhrases2: negPhraseArray2,
+        //             searchQueries2: searchQueryArray2
+        //         }),
+        //         contentType: "application/json",
+        //         success: function (response) {
+        //             // Обработка успешного ответа от сервера
+        //         },
+        //         error: function (error) {
+        //             // Обработка ошибки
+        //         },
+        //     });
+        //     alert('Чистка завершена');
+        // }
     </script>
 </head>
 <body>
@@ -300,6 +391,8 @@
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
                             <th scope="col" style="width: 40px"></th>
                             <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="visibility: hidden"></th>
+                            <th scope="col" style="visibility: hidden"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -328,6 +421,8 @@
                                             <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
                                         </button>
                                 </td>
+                                <td th:text="${negPhrase.getId()}" style="visibility: hidden"></td>
+                                <td text="negPhrase" style="visibility: hidden"></td>
                             </tr>
                             <tr th:each="searchQuery : ${searchQueries}">
                                 <td th:text="${searchQuery.getSearchQuery.getCampaign()}"></td>
@@ -353,6 +448,8 @@
                                         <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
                                     </button>
                                 </td>
+                                <td th:text="${searchQuery.getSearchQuery.getId()}" style="visibility: hidden"></td>
+                                <td text="searchQuery" style="visibility: hidden"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -381,6 +478,8 @@
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
                             <th scope="col" style="width: 40px"></th>
                             <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="visibility: hidden"></th>
+                            <th scope="col" style="visibility: hidden"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -400,6 +499,88 @@
 
         </div>
     </div>
+    <div class="row" style="text-align: left">
+        <div class="col"></div>
+        <div class="col"></div>
+        <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <form class="needs-validation" th:method="post" th:action="@{/endCleaning}">
+                            <button onclick="endCleaning()" class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Завершить чистку</button>
+                            <input type="hidden" name="negPhrases1" id="negPhrases1" />
+                            <input type="hidden" name="searchQueries1" id="searchQueries1" />
+                            <input type="hidden" name="negPhrases2" id="negPhrases2" />
+                            <input type="hidden" name="searchQueries2" id="searchQueries2" />
+                            <input type="hidden" name="negPhrasesTexts1" id="negPhrasesTexts1" />
+                            <input type="hidden" name="searchQueriesTexts1" id="searchQueriesTexts1" />
+                            <input type="hidden" name="negPhrasesTexts2" id="negPhrasesTexts2" />
+                            <input type="hidden" name="searchQueriesTexts2" id="searchQueriesTexts2" />
+                        </form>
+                    </div>
+                </div>
+        </div>
+        <script>
+            // Обработчик отправки формы
+            $("form.needs-validation").on("submit", function (event) {
+                event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+                var negPhraseArray1 = [];
+                var negPhraseTexts1 = [];
+                var searchQueryArray1 = [];
+                var searchQueryTexts1 = [];
+                var negPhraseArray2 = [];
+                var negPhraseTexts2 = [];
+                var searchQueryArray2 = [];
+                var searchQueryTexts2 = [];
+
+                // Проходим по каждой строке в первой таблице
+                $("#first-table tbody tr").each(function () {
+                    var tds = $(this).find("td");
+                    var objectType = $(tds[7]).attr("text");
+                    var objectId = $(tds[6]).text();
+                    var objectText = $(tds[2]).text();
+
+                    if (objectType === 'searchQuery') {
+                        searchQueryArray1.push(objectId);
+                        searchQueryTexts1.push(objectText);
+                    } else {
+                        negPhraseArray1.push(objectId);
+                        negPhraseTexts1.push(objectText);
+                    }
+                });
+
+                // Проходим по каждой строке во второй таблице
+                $("#second-table tbody tr").each(function () {
+                    var tds = $(this).find("td");
+                    var objectType = $(tds[7]).attr("text");
+                    var objectId = $(tds[6]).text();
+                    var objectText = $(tds[2]).text();
+
+                    if (objectType === 'searchQuery') {
+                        searchQueryArray2.push(objectId);
+                        searchQueryTexts2.push(objectText);
+                    } else {
+                        negPhraseArray2.push(objectId);
+                        negPhraseTexts2.push(objectText);
+                    }
+                });
+
+                // Устанавливаем значения скрытых полей формы
+                $("#negPhrases1").val(JSON.stringify(negPhraseArray1));
+                $("#searchQueries1").val(JSON.stringify(searchQueryArray1));
+                $("#negPhrases2").val(JSON.stringify(negPhraseArray2));
+                $("#searchQueries2").val(JSON.stringify(searchQueryArray2));
+                $("#negPhrasesTexts1").val(JSON.stringify(negPhraseTexts1));
+                $("#searchQueriesTexts1").val(JSON.stringify(searchQueryTexts1));
+                $("#negPhrasesTexts2").val(JSON.stringify(negPhraseTexts2));
+                $("#searchQueriesTexts2").val(JSON.stringify(searchQueryTexts2));
+
+                // Отправляем форму
+                this.submit();
+            });
+        </script>
+        <div class="col"></div>
+        <div class="col"></div>
     </div>
 </div>
 </div>

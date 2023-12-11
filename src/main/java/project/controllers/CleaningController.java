@@ -18,8 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import project.models.*;
-import project.repositories.MetricRepository;
-import project.repositories.UserRepository;
+import project.repositories.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,6 +36,12 @@ public class CleaningController {
     private UserRepository userRepository;
     @Autowired
     private MetricRepository metricRepository;
+    @Autowired
+    private CleanRepository cleanRepository;
+    @Autowired
+    private NegPhraseRepository negPhraseRepository;
+    @Autowired
+    private SearchQueryRepository searchQueryRepository;
     @GetMapping("/")
     public String home() {
         return "home";
@@ -60,7 +65,7 @@ public class CleaningController {
 
     private String filters = " ";
 
-    private Clean clean;
+    private Clean clean = new Clean();
 
     @PostMapping("/loadReport")
     public String loadReport (Model model, @RequestParam("fileInput") MultipartFile[] reports, @RequestParam("name") String name, @RequestParam("system") String system) throws IOException {
@@ -68,13 +73,11 @@ public class CleaningController {
         filteredMetrics.clear();
         selectedMetrics.clear();
         metrics.clear();
-        Clean clean1 = new Clean();
         User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Users user = userRepository.findByLogin(user1.getUsername());
-        clean1.setUser(user);
-        clean1.setProject(name);
-        clean1.setAdvertisingSystem(system);
-
+        clean.setUser(user);
+        clean.setProject(name);
+        clean.setAdvertisingSystem(system);
     try {
         if (system.contains("Яндекс")) {
             XSSFWorkbook workbookNew = new XSSFWorkbook(reports[0].getInputStream());
@@ -606,6 +609,135 @@ public class CleaningController {
         return "negList";
     }
 
+    @PostMapping("/endCleaning")
+    public String endCleaning(
+            @RequestParam("negPhrases1") List<String> negPhrases1,
+            @RequestParam("searchQueries1") List<String> searchQueries1,
+            @RequestParam("negPhrases2") List<String> negPhrases2,
+            @RequestParam("searchQueries2") List<String> searchQueries2,
+            @RequestParam("negPhrasesTexts1") List<String> negPhrasesTexts1,
+            @RequestParam("searchQueriesTexts1") List<String> searchQueriesTexts1,
+            @RequestParam("negPhrasesTexts2") List<String> negPhrasesTexts2,
+            @RequestParam("searchQueriesTexts2") List<String> searchQueriesTexts2
+    ) {
+        final List<String> negIdsCopy1 = removeSymbols(negPhrases1);
+        final List<String> negIdsCopy2 = removeSymbols(negPhrases2);
+        final List<String> queryIdsCopy1 = removeSymbols(searchQueries1);
+        final List<String> queryIdsCopy2 = removeSymbols(searchQueries2);
+        final List<String> negIdsCopyTexts1 = removeSymbols(negPhrasesTexts1);
+        final List<String> negIdsCopyTexts2 = removeSymbols(negPhrasesTexts2);
+        final List<String> queryIdsCopyTexts1 = removeSymbols(searchQueriesTexts1);
+        final List<String> queryIdsCopyTexts2 = removeSymbols(searchQueriesTexts2);
+        Calendar calendar = Calendar.getInstance();
+        Date currentDate = calendar.getTime();
+        Clean clean1 = new Clean();
+        clean1.setUser(clean.getUser());
+        clean1.setAdvertisingSystem(clean.getAdvertisingSystem());
+        clean1.setProject(clean.getProject());
+        clean1.setDate(currentDate);
+        cleanRepository.save(clean1);
+        List<NegPhrase> addedNegPhrases = selectedNegPhrases.stream()
+                .filter(negPhrase -> negIdsCopy1.contains(String.valueOf(negPhrase.getId())))
+                .collect(Collectors.toList());
+        int index1 = 0;
+        for (NegPhrase negPhrase:addedNegPhrases) {
+            SearchQuery searchQuery = copySearchQuery(negPhrase.getSearchQuery());
+            searchQuery.setClean(clean1);
+            searchQueryRepository.save(searchQuery);
+            NegPhrase newNegPhrase = new NegPhrase();
+            newNegPhrase.setStatus("added");
+            newNegPhrase.setText(negIdsCopyTexts1.get(index1));
+            newNegPhrase.setSearchQuery(searchQuery);
+            negPhraseRepository.save(newNegPhrase);
+            for (Metric metric:selectedMetrics) {
+                if (metric.getSearchQuery()==negPhrase.getSearchQuery()) {
+                    Metric metric1 = copyMetric(metric);
+                    metric1.setSearchQuery(searchQuery);
+                    metricRepository.save(metric1);
+                }
+            }
+            index1++;
+        }
+        List<NegPhrase> addedNegPhraseToCoordination = selectedNegPhrases.stream()
+                .filter(negPhrase -> negIdsCopy2.contains(String.valueOf(negPhrase.getId())))
+                .collect(Collectors.toList());
+        int index2 = 0;
+        for (NegPhrase negPhrase:addedNegPhraseToCoordination) {
+            SearchQuery searchQuery = copySearchQuery(negPhrase.getSearchQuery());
+            searchQuery.setClean(clean1);
+            searchQueryRepository.save(searchQuery);
+            NegPhrase newNegPhrase = new NegPhrase();
+            newNegPhrase.setStatus("question");
+            newNegPhrase.setText(negIdsCopyTexts2.get(index2));
+            newNegPhrase.setSearchQuery(searchQuery);
+            negPhraseRepository.save(newNegPhrase);
+            for (Metric metric:selectedMetrics) {
+                if (metric.getSearchQuery()==negPhrase.getSearchQuery()) {
+                    Metric metric1 = copyMetric(metric);
+                    metric1.setSearchQuery(searchQuery);
+                    metricRepository.save(metric1);
+                }
+            }
+            index2++;
+        }
+        List<Metric> addedQueries = selectedMetrics.stream()
+                .filter(negPhrase -> queryIdsCopy1.contains(String.valueOf(negPhrase.getSearchQuery().getId())))
+                .collect(Collectors.toList());
+        int index3 = 0;
+        for (Metric metric: addedQueries) {
+            SearchQuery searchQuery = copySearchQuery(metric.getSearchQuery());
+            searchQuery.setClean(clean1);
+            searchQueryRepository.save(searchQuery);
+            NegPhrase negPhrase = new NegPhrase();
+            negPhrase.setStatus("added");
+            negPhrase.setText(queryIdsCopyTexts1.get(index3));
+            negPhrase.setSearchQuery(searchQuery);
+            negPhraseRepository.save(negPhrase);
+            Metric metric1 = copyMetric(metric);
+            metric1.setSearchQuery(searchQuery);
+            metricRepository.save(metric1);
+            index3++;
+        }
+        List<Metric> addedQueriesToCoordination = selectedMetrics.stream()
+                .filter(negPhrase -> queryIdsCopy2.contains(String.valueOf(negPhrase.getSearchQuery().getId())))
+                .collect(Collectors.toList());
+        int index4 = 0;
+        for (Metric metric: addedQueriesToCoordination) {
+            SearchQuery searchQuery = copySearchQuery(metric.getSearchQuery());
+            searchQuery.setClean(clean1);
+            searchQueryRepository.save(searchQuery);
+            NegPhrase negPhrase = new NegPhrase();
+            negPhrase.setStatus("question");
+            negPhrase.setText(queryIdsCopyTexts2.get(index4));
+            negPhrase.setSearchQuery(searchQuery);
+            negPhraseRepository.save(negPhrase);
+            Metric metric1 = copyMetric(metric);
+            metric1.setSearchQuery(searchQuery);
+            metricRepository.save(metric1);
+            index4++;
+        }
+        return "home";
+    }
+
+    private SearchQuery copySearchQuery (SearchQuery old) {
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.setCampaign(old.getCampaign());
+        searchQuery.setAddGroup(old.getAddGroup());
+        searchQuery.setKeyword(old.getKeyword());
+        searchQuery.setText(old.getText());
+        return searchQuery;
+    }
+
+    private Metric copyMetric (Metric old) {
+        Metric metric = new Metric();
+        metric.setShows(old.getShows());
+        metric.setClicks(old.getClicks());
+        metric.setConversions(old.getConversions());
+        metric.setConsumption(old.getConsumption());
+        metric.setCurrencyCode(old.getCurrencyCode());
+        return metric;
+    }
+
     private void addDataToReport (List<Metric> metrics, XSSFSheet worksheet) {
         XSSFRow headerRow = worksheet.createRow(0);
         headerRow.createCell(0).setCellValue("Кампания");
@@ -645,6 +777,15 @@ public class CleaningController {
             headerRow1.createCell(10).setCellValue(metric.getConsumption());
         }
     }
+
+    private List<String> removeSymbols(List<String> strings) {
+        List<String> cleanedStrings = new ArrayList<>();
+        for (String str : strings) {
+            str = str.replaceAll("[\"\\[\\]]", "");
+            cleanedStrings.add(str);
+        }
+        return cleanedStrings;
+    }
     private String createPieSrting (List<Metric> metrics, int chart) throws JsonProcessingException {
         Integer shows = 0, clicks = 0, convs = 0;
         for (Metric metric1:metrics) {
@@ -676,6 +817,9 @@ public class CleaningController {
         articleList.add("по");
         articleList.add("от");
         articleList.add("у");
+        articleList.add("и");
+        articleList.add("или");
+        articleList.add("с");
     }
 
     private String[] lemmaList (String [] list) {
