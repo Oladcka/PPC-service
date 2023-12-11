@@ -116,72 +116,100 @@
 
                 table.find('tbody').empty().append(rows);
             });
+            const editableCells = document.querySelectorAll('td[contenteditable="true"]');
+
+// Проходимся по каждому элементу
+            editableCells.forEach(function(cell) {
+                // Получаем текст внутри элемента
+                const text = cell.textContent.trim();
+
+                // Разбиваем текст на слова
+                const words = text.split(' ');
+
+                // Проверяем количество слов
+                if (words.length > 7) {
+                    // Устанавливаем красный цвет текста
+                    cell.style.color = 'red';
+                }
+            });
+
         });
         function applySelectedOption(searchQueryId) {
+            var selectedElement = document.getElementById('select-' + searchQueryId);
             var selectedOption = document.getElementById('select-' + searchQueryId).value;
             var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
-
-            if (selectedOption === 'option1') {
-                // document.getElementById('editableCell-' + searchQueryId).textContent = cellText.replace(/^! /, '');
-                const cellElement = document.getElementById('editableCell-' + searchQueryId);
-                const cellText = cellElement.textContent;
-
-                // Удаляем символы "!" если они являются первым символом строки
+            var docElement = document.getElementById('editableCell-' + searchQueryId);
+            var withoutBrackets = "";
+            for (var i =0; i< 3; i++) {
                 const withoutExclamation = cellText.replace(/^! /, '');
-
-                // Удаляем двойные кавычки "" если вся строка взята в них
                 const withoutQuotes = withoutExclamation.replace(/^"(.*)"$/, '$1');
-
-                // Удаляем квадратные скобки [] если вся строка взята в них
-                const withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
-
-                // Обновляем содержимое ячейки с отредактированным текстом
-                cellElement.textContent = withoutBrackets;
+                withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
+            }
+            if (selectedOption === 'option1') {
+                docElement.textContent = withoutBrackets;
             } else if (selectedOption === 'option2') {
-                const previousValue = selectElement.value;
-                // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
                 if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
-                    document.getElementById('editableCell-' + searchQueryId).textContent = '! ' + cellText;
-                }
-                else {
-                    alert('Ошибка! Строка должна содержать только одно слово.');
-                    // Восстанавливаем предыдущее значение <select>
-                    selectElement.value = previousValue;
+                    docElement.textContent = '! ' + withoutBrackets;
+                } else {
+                    alert('Ошибка! Фраза содержать только одно слово.');
+                    docElement.textContent = withoutBrackets;
+                    selectedElement.value = 'option1';
+                    // selectedOption.textContent = 'Широкое';
                 }
             } else if (selectedOption === 'option3') {
-                // Берем фразу в "", если еще не взята в ""
-                if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
-                    document.getElementById('editableCell-' + searchQueryId).textContent = '"' + cellText + '"';
-                }
+                docElement.textContent = '"' + withoutBrackets + '"';
             } else if (selectedOption === 'option4') {
-                // Берем фразу в [], если еще не взята в []
-                if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
-                    document.getElementById('editableCell-' + searchQueryId).textContent = '[' + cellText + ']';
-                }
+                docElement.textContent = '[' + withoutBrackets + ']';
             }
         }
         function applySelectedOption1(searchQueryId) {
+            var selectedElement = document.getElementById('select-' + searchQueryId);
             var selectedOption = document.getElementById('select-' + searchQueryId).value;
             var cellText = document.getElementById('editable-' + searchQueryId).textContent;
-
+            var docElement = document.getElementById('editable-' + searchQueryId);
+            var withoutBrackets = "";
+            for (var i =0; i< 3; i++) {
+                const withoutExclamation = cellText.replace(/^! /, '');
+                const withoutQuotes = withoutExclamation.replace(/^"(.*)"$/, '$1');
+                withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
+            }
             if (selectedOption === 'option1') {
-                // Удаляем символы перед строкой, если есть "!"
-                document.getElementById('editable-' + searchQueryId).textContent = cellText.replace(/^! /, '');
+                docElement.textContent = withoutBrackets;
             } else if (selectedOption === 'option2') {
-                // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
                 if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
-                    document.getElementById('editable-' + searchQueryId).textContent = '! ' + cellText;
+                    docElement.textContent = '! ' + withoutBrackets;
+                } else {
+                    alert('Ошибка! Фраза содержать только одно слово.');
+                    docElement.textContent = withoutBrackets;
+                    selectedElement.value = 'option1';
+                    // selectedOption.textContent = 'Широкое';
                 }
             } else if (selectedOption === 'option3') {
-                // Берем фразу в "", если еще не взята в ""
-                if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
-                    document.getElementById('editable-' + searchQueryId).textContent = '"' + cellText + '"';
-                }
+                docElement.textContent = '"' + withoutBrackets + '"';
             } else if (selectedOption === 'option4') {
-                // Берем фразу в [], если еще не взята в []
-                if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
-                    document.getElementById('editable-' + searchQueryId).textContent = '[' + cellText + ']';
-                }
+                docElement.textContent = '[' + withoutBrackets + ']';
+            }
+        }
+        function checkLength1(searchQueryId) {
+            var cell = document.getElementById('editable-' + searchQueryId);
+            var cellText = document.getElementById('editable-' + searchQueryId).textContent;
+            const words = cellText.split(' ');
+            if (words.length > 7) {
+                cell.style.color = 'red';
+            }
+            else {
+                cell.style.color = 'black';
+            }
+        }
+        function checkLength(searchQueryId) {
+            var cell = document.getElementById('editableCell-' + searchQueryId);
+            var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
+            const words = cellText.split(' ');
+            if (words.length > 7) {
+                cell.style.color = 'red';
+            }
+            else {
+                cell.style.color = 'black';
             }
         }
     </script>
@@ -233,15 +261,15 @@
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Тип соответствия</th>
                             <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="width: 40px"></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tbody>
-<!--                        <div th:each="negPhrase : ${negPhrases}">-->
                             <tr th:each="negPhrase : ${negPhrases}">
                                 <td th:text="${negPhrase.getSearchQuery.getCampaign()}"></td>
                                 <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
-                                <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}"></td>
+                                <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}" th:oninput="'checkLength1(' + ${negPhrase.getId()} + ')'"></td>
                                 <td>
                                     <select required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
@@ -255,7 +283,7 @@
                             <tr th:each="searchQuery : ${searchQueries}">
                                 <td th:text="${searchQuery.getSearchQuery.getCampaign()}"></td>
                                 <td th:text="${searchQuery.getSearchQuery.getAddGroup()}"></td>
-                                <td contenteditable="true" th:text="${searchQuery.getSearchQuery.getText()}" th:id="'editableCell-' + ${searchQuery.getSearchQuery.getId()}"></td>
+                                <td contenteditable="true" th:text="${searchQuery.getSearchQuery.getText()}" th:id="'editableCell-' + ${searchQuery.getSearchQuery.getId()}" th:oninput="'checkLength(' + ${searchQuery.getSearchQuery.getId()} + ')'"></td>
                                 <td>
                                     <select required th:id="'select-' + ${searchQuery.getSearchQuery.getId()}" th:onchange="'applySelectedOption(' + ${searchQuery.getSearchQuery.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
@@ -264,9 +292,10 @@
                                         <option value="option4">[] Порядок слов</option>
                                     </select>
                                 </td>
-                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedNegPhrases" th:value="${searchQuery.getId()}" /></td>
+                                <td style="padding-right: 10px; padding-left: 10px">
+
+                                </td>
                             </tr>
-<!--                        </div>-->
                         </tbody>
                     </table>
                 </div>
@@ -280,7 +309,6 @@
             </div>
             <div style="width: 600px">
                 <div class="row" style="text-align: left">
-                    <div class="col"></div>
                     <div class="col"></div>
                     <div class="col">
                         <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/createNegList}">
@@ -313,28 +341,6 @@
                             });
                         </script>
                     </div>
-                    <script>
-                        // Отслеживание изменений состояния чекбоксов
-                        const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
-                        checkboxes.forEach((checkbox) => {
-                            checkbox.addEventListener('change', updateButtonVisibility);
-                        });
-
-                        // Функция для обновления видимости кнопки
-                        function updateButtonVisibility() {
-                            const button = document.getElementById('addButton');
-                            const checkedCheckboxes = document.querySelectorAll(
-                                'input[name="selectedNegPhrases"]:checked'
-                            );
-
-                            // Проверка количества выбранных чекбоксов и установка видимости кнопки
-                            if (checkedCheckboxes.length > 0) {
-                                button.style.display = 'block';
-                            } else {
-                                button.style.display = 'none';
-                            }
-                        }
-                    </script>
                 </div>
             </div>
         </div>
@@ -345,32 +351,6 @@
 </div>
 <button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
 <div th:replace="fragments/footer :: footer"></div>
-<script>
-    function applySelectedOption(searchQueryId) {
-        var selectedOption = document.getElementById('select-' + searchQueryId).value;
-        var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
-
-        if (selectedOption === 'option1') {
-            // Удаляем символы перед строкой, если есть "!"
-            document.getElementById('editableCell-' + searchQueryId).textContent = cellText.replace(/^! /, '');
-        } else if (selectedOption === 'option2') {
-            // Добавляем "!" перед фразой, если его нет и фраза состоит из одного слова
-            if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
-                document.getElementById('editableCell-' + searchQueryId).textContent = '! ' + cellText;
-            }
-        } else if (selectedOption === 'option3') {
-            // Берем фразу в "", если еще не взята в ""
-            if (!cellText.startsWith('"') && !cellText.endsWith('"')) {
-                document.getElementById('editableCell-' + searchQueryId).textContent = '"' + cellText + '"';
-            }
-        } else if (selectedOption === 'option4') {
-            // Берем фразу в [], если еще не взята в []
-            if (!cellText.startsWith('[') && !cellText.endsWith(']')) {
-                document.getElementById('editableCell-' + searchQueryId).textContent = '[' + cellText + ']';
-            }
-        }
-    }
-</script>
 </body>
 
 </html>
