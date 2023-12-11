@@ -212,6 +212,62 @@
                 cell.style.color = 'black';
             }
         }
+        function move(button) {
+            var row = button.parentNode.parentNode; // Получаем родительскую строку таблицы
+            var tbody = row.parentNode;
+            var table = tbody.parentNode; // Получаем родительскую таблицу
+            var tableId = table.id; // Получаем id таблицы
+            var row = document.getElementById(button.id).closest("tr");
+            if (tableId==='first-table')
+            document.querySelector("#second-table > tbody").appendChild(row);
+            else document.querySelector("#first-table > tbody").appendChild(row);
+        }
+        function delete1(negPhraseId) {
+            var row = document.getElementById("editable-" + negPhraseId).closest("tr");
+            row.remove();
+        }
+        function delete2(negPhraseId) {
+            var row = document.getElementById("editableCell-" + negPhraseId).closest("tr");
+            row.remove();
+        }
+        function copyFields() {
+            var table = document.getElementById('first-table');
+            var rows = table.getElementsByTagName('tr');
+            var copiedData = [];
+            var sysInputs = [];
+
+            for (var i = 1; i < rows.length; i++) {
+                var row = rows[i];
+                var cells = row.getElementsByTagName('td');
+                var rowData = [];
+                for (var j = 0; j < 3; j++) {
+                    const sysInput = document.createElement('input');
+                    sysInput.setAttribute("id", i.toString() + "-" + j.toString());
+                    sysInput.setAttribute("value", cells[j].textContent);
+                    sysInput.select();
+                    sysInputs.push(sysInput);
+                    rowData.push(cells[j].textContent); // Store the copied cell data
+                }
+                copiedData.push(rowData.join('\t')); // Join the row cell data with a tab separator
+            }
+
+            var joinedData = copiedData.join('\n'); // Join the row data with a newline separator
+
+            // Copy the joined data to clipboard
+            const tempInput = document.createElement('textarea');
+            tempInput.value = joinedData;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            for (var i = 0; i < sysInputs.length; i++) {
+                var sysInput = sysInputs[i];
+                if (sysInput.parentNode) {
+                    sysInput.parentNode.removeChild(sysInput);
+                }
+            }
+        }
     </script>
 </head>
 <body>
@@ -222,44 +278,26 @@
     <div class="row">
         <div class="col">
             <br>
-            <h5>Список минус-фраз:</h5>
-            <br>
-            <div style="width: 600px">
-                <div class="row">
-                    <div class="col"></div>
-                    <div class="col" style="text-align: right">
-                        <label> </label>
-                        <label style="color: dimgrey">
-                            <input type="checkbox" id="selectAllCheckbox"> Выделить все
-                        </label>
-                    </div>
-                    <script>
-                        // Обработка изменений состояния чекбокса "Выделить все"
-                        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-                        selectAllCheckbox.addEventListener('change', toggleAllCheckboxes);
-
-                        // Функция для выделения или снятия выделения со всех чекбоксов
-                        function toggleAllCheckboxes() {
-                            const checkboxes = document.querySelectorAll('input[name="selectedNegPhrases"]');
-
-                            checkboxes.forEach((checkbox) => {
-                                checkbox.checked = selectAllCheckbox.checked;
-                            });
-
-                            updateButtonVisibility();
-                        }
-                    </script>
+            <div class="row">
+                <div class="col-auto" style="width: 50px">
+                    <button onclick="copyFields()" class="btn btn-outline-primary me-2" id="copy" style="background-color: white; color: black; border-color: white">
+                        <img src="/static/images/copy.png" alt="Скачать" height="20" width="20">
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <h5>Минус-фразы:</h5>
                 </div>
             </div>
+            <br>
             <div class="row">
                 <div style="max-height: 400px; overflow-x: scroll; width: 600px">
-                    <table class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                    <table id="first-table" class="table table-striped table-sm table-b table-bordered" style="text-align: left">
                         <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
                         <tr style="font-weight: normal; border-top: none">
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
                             <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
-                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Тип соответствия</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
                             <th scope="col" style="width: 40px"></th>
                             <th scope="col" style="width: 40px"></th>
                         </tr>
@@ -271,29 +309,49 @@
                                 <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
                                 <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}" th:oninput="'checkLength1(' + ${negPhrase.getId()} + ')'"></td>
                                 <td>
-                                    <select required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
+                                    <select style="width: 100px" required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
                                         <option value="option2">! Форма слова</option>
                                         <option value="option3">"" Кол-во слов</option>
                                         <option value="option4">[] Порядок слов</option>
                                     </select>
                                 </td>
-                                <td style="padding-right: 10px; padding-left: 10px"><input type="checkbox" name="selectedNegPhrases" th:value="${negPhrase.getId()}" /></td>
+                                <td>
+                                        <!-- Заменяем текст на значок аккаунта -->
+                                        <button th:id="'delete1-' + ${negPhrase.getId()}" th:onclick="'delete1(' + ${negPhrase.getId()} + ')'" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                            <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
+                                        </button>
+                                </td>
+                                <td>
+                                        <!-- Заменяем текст на значок аккаунта -->
+                                        <button th:id="'move1-' + ${negPhrase.getId()}" onclick="move(this)" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                            <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
+                                        </button>
+                                </td>
                             </tr>
                             <tr th:each="searchQuery : ${searchQueries}">
                                 <td th:text="${searchQuery.getSearchQuery.getCampaign()}"></td>
                                 <td th:text="${searchQuery.getSearchQuery.getAddGroup()}"></td>
                                 <td contenteditable="true" th:text="${searchQuery.getSearchQuery.getText()}" th:id="'editableCell-' + ${searchQuery.getSearchQuery.getId()}" th:oninput="'checkLength(' + ${searchQuery.getSearchQuery.getId()} + ')'"></td>
                                 <td>
-                                    <select required th:id="'select-' + ${searchQuery.getSearchQuery.getId()}" th:onchange="'applySelectedOption(' + ${searchQuery.getSearchQuery.getId()} + ')'" >
+                                    <select style="width: 100px" required th:id="'select-' + ${searchQuery.getSearchQuery.getId()}" th:onchange="'applySelectedOption(' + ${searchQuery.getSearchQuery.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
                                         <option value="option2">! Форма слова</option>
                                         <option value="option3">"" Кол-во слов</option>
                                         <option value="option4">[] Порядок слов</option>
                                     </select>
                                 </td>
-                                <td style="padding-right: 10px; padding-left: 10px">
-
+                                <td>
+                                    <!-- Заменяем текст на значок аккаунта -->
+                                    <button th:id="'delete2-' + ${searchQuery.getSearchQuery.getId()}" th:onclick="'delete2(' + ${searchQuery.getSearchQuery.getId()} + ')'" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                        <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
+                                    </button>
+                                </td>
+                                <td>
+                                    <!-- Заменяем текст на значок аккаунта -->
+                                    <button th:id="'move-' + ${searchQuery.getSearchQuery.getId()}" onclick="move(this)" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                        <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -307,44 +365,40 @@
                     <br>
                 </div>
             </div>
-            <div style="width: 600px">
-                <div class="row" style="text-align: left">
-                    <div class="col"></div>
-                    <div class="col">
-                        <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/createNegList}">
-                            <div class="row">
-                                <div class="col">
-                                    <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type="submit">Составить список</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col">
-                        <form class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/addWords}">
-                            <div class="row">
-                                <div class="col">
-                                    <input type="hidden" name="selectedNegPhraseIds" id="selectedNegPhraseIds" />
-                                    <button class="w-100 btn btn-lg btn-light" id="addButton" style = "background-color: #ffc24b; border-color:white;color: black; display: none; font-size: smaller" type="submit">В минус-фразы</button>
-                                </div>
-                            </div>
-                        </form>
-                        <script>
-                            document.getElementById('addButton').addEventListener('click', function() {
-                                // Get all the selected checkboxes
-                                var selectedCheckboxes = document.querySelectorAll('input[name="selectedNegPhrases"]:checked');
-
-                                var negPhraseIds = Array.from(selectedCheckboxes).map(function(checkbox) {
-                                    return checkbox.value;
-                                });
-
-                                document.getElementById('selectedNegPhraseIds').value = JSON.stringify(negPhraseIds);
-                            });
-                        </script>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="col">
+            <br>
+            <h5>К согласованию:</h5>
+            <br>
+            <div class="row">
+                <div style="max-height: 400px; overflow-x: scroll; width: 600px">
+                    <table id="second-table" class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                        <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+                        <tr style="font-weight: normal; border-top: none">
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
+                            <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
+                            <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="width: 40px"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tbody>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(negPhrases)}">
+                <div class="row">
+                    <br>
+                    <label style="text-align: center; color: firebrick">Нет спрогнозированных минус-слов</label>
+                    <br>
+                </div>
+            </div>
+
+        </div>
     </div>
     </div>
 </div>
