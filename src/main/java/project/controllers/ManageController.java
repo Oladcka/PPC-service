@@ -9,11 +9,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import project.models.Clean;
 import project.models.Person;
 import project.models.Users;
+import project.repositories.CleanRepository;
 import project.repositories.PersonRepository;
 import project.repositories.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -22,6 +25,10 @@ public class ManageController {
     private UserRepository userRepository;
     @Autowired
     private PersonRepository personRepository;
+    @Autowired
+    private CleanRepository cleanRepository;
+
+    private Long personId;
     @GetMapping("/workers")
     public String showBriefs(Authentication authentication, Model model){
         User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -33,17 +40,23 @@ public class ManageController {
     }
 
     @PostMapping("/userCard")
-    public String userCard(Model model, @RequestParam("personId") long id){
+    public String userCard(Model model, @RequestParam("personId") String id){
         System.out.println(id);
-        model.addAttribute("person", personRepository.getReferenceById(id));
+        personId = Long.valueOf(id);
+        Person person = personRepository.getReferenceById(personId);
+        List<Clean> cleans = cleanRepository.findAllByUser(person.getUser());
+        model.addAttribute("cleans", cleans);
+        model.addAttribute("person", person);
         return "person";
     }
     @PostMapping("/changeActive")
-    public String changeActive(Model model, @RequestParam("personId") long id){
-        Person person = personRepository.getReferenceById(id);
+    public String changeActive(Model model){
+        Person person = personRepository.getReferenceById(personId);
         Users user = person.getUser();
         user.setActive(!user.getActive());
         userRepository.save(user);
+        List<Clean> cleans = cleanRepository.findAllByUser(person.getUser());
+        model.addAttribute("cleans", cleans);
         model.addAttribute("person", person);
         return "person";
     }

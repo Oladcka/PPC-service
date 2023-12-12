@@ -56,11 +56,11 @@
         }
 
         .sortable.asc:after {
-            background-image: url("/static/images/up.png"); /* Иконка вверх при возрастающей сортировке */
+            background-image: url("/images/up.png"); /* Иконка вверх при возрастающей сортировке */
         }
 
         .sortable.desc:after {
-            background-image: url("/static/images/down.png"); /* Иконка вниз при убывающей сортировке */
+            background-image: url("/images/down.png"); /* Иконка вниз при убывающей сортировке */
         }
     </style>
 
@@ -93,14 +93,48 @@
 <body>
 
 <header th:insert ="~{fragments/header :: header}"></header>
+
 <div class="container" style="margin-right: 100px; padding-left: 200px; padding-right: 300px">
-    <h5 th:text ="${person.getName()} ${person.getSurname()}"></h5>
-    <label>Доступ: </label><label th:text="${person.getUser.getActive()}"></label>
+    <br>
+    <div class="row justify-content-center">
+        <div style="text-align: center; width: 150px; height: 150px; border-radius: 100%; border: 2px solid #ffc24b; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+            <img th:src="${person.getPhoto()}" style="object-fit: cover;" id="accImage" alt="Photo" height="100%" width="120%">
+        </div>
+    </div>
+    <h5 th:text ="${person.name} + ' ' + ${person.surname}"></h5>
+    <label text="Доступ: "></label><label th:text="${person.getUser.getActive()}"></label>
     <form class="needs-validation" th:method="post" th:action="@{/changeActive}">
-        <input th:text="${person.getId()}" name="personId" id="personId" style="visibility: hidden">
-        <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller; width: 100px" type="submit">Изменить доступ</button>
+        <div class="row">
+            <div class="col">
+                <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller; width: 100px" type="submit">Изменить доступ</button>
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
     </form>
     <br/>
+    <div style="max-height: 200px; overflow-x: scroll; width: 910px">
+        <table class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+            <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+            <tr style="font-weight: normal; border-top: none">
+                <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Дата</th>
+                <th class="sortable" style="font-weight: normal" scope="col">Проект</th>
+                <th class="sortable" style="font-weight: normal" scope="col">Поисковая система</th>
+            </tr>
+            </thead>
+            <tbody>
+            <div th:each="clean : ${cleans}">
+                <tr>
+                    <td th:text="${clean.getDate()}"></td>
+                    <td th:text="${clean.getProject()}"></td>
+                    <td th:text="${clean.getAdvertisingSystem()}"></td>
+                </tr>
+            </div>
+            </tbody>
+        </table>
+    </div>
 </div>
 <button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
 <div th:replace="fragments/footer :: footer"></div>
