@@ -80,6 +80,7 @@ public class CleaningController {
         clean.setAdvertisingSystem(system);
     try {
         if (system.contains("Яндекс")) {
+            addSystem="Яндекс";
             XSSFWorkbook workbookNew = new XSSFWorkbook(reports[0].getInputStream());
             if (checkYandexReport(workbookNew)) {
                 String code = workbookNew.getSheetAt(0).getRow(4).getCell(10).toString().substring(8, 10);
@@ -116,7 +117,7 @@ public class CleaningController {
                 return "loadReport";
             }
         } else {
-
+            addSystem = "Google";
             CSVFormat csvFormat = CSVFormat.EXCEL.withDelimiter('\t');
             try (InputStream inputStream = reports[0].getInputStream();
                  Reader reader = new InputStreamReader(inputStream, "UTF-16");
@@ -475,8 +476,15 @@ public class CleaningController {
         for (SearchQuery searchQuery: searchQueries) {
             String[] text = searchQuery.getText().split("\\s+");
             String[] key = searchQuery.getKeyword().split("\\s+");
-            List<String> textList = Arrays.asList(lemmaList(text));
-            List<String> keyList = Arrays.asList(lemmaList(key));
+            List<String> textList = new ArrayList<>();
+            List<String> keyList = new ArrayList<>();
+            if(addSystem.equals("Яндекс")) {
+                textList = Arrays.asList(lemmaList(text));
+                keyList = Arrays.asList(lemmaList(key));
+            } else {
+                textList = Arrays.asList(text);
+                keyList = Arrays.asList(key);
+            }
             negPhrasesTexts = new ArrayList<>(textList);
             negPhrasesTexts.removeAll(keyList);
             negPhrasesTexts.removeAll(articleList);
@@ -582,9 +590,6 @@ public class CleaningController {
             List<NegPhrase> selectedNegPhrases1 = negPhrases.stream()
                     .filter(negPhrase -> negIdsCopy.contains(String.valueOf(negPhrase.getId())))
                     .collect(Collectors.toList());
-//            List<NegPhrase> selectedNegPhrases1 = negPhrases.stream()
-//                    .filter(negPhrase -> negIdsCopy.stream().anyMatch(id -> id.equals(String.valueOf(negPhrase.getId()))))
-//                    .collect(Collectors.toList());
             for (NegPhrase negPhrase :selectedNegPhrases1) {
                 selectedNegPhrases.add(negPhrase);
             }
@@ -606,7 +611,8 @@ public class CleaningController {
     public String createNegList (Model model) {
         model.addAttribute("negPhrases", selectedNegPhrases);
         model.addAttribute("searchQueries", selectedMetrics);
-        return "negList";
+        if (addSystem.equals("Яндекс")) return "negList";
+        else return "negListGoogle";
     }
 
     @PostMapping("/endCleaning")

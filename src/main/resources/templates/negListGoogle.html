@@ -66,6 +66,10 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // var negPhraseArray1 = [];
+        // var searchQueryArray1 = [];
+        // var negPhraseArray2 = [];
+        // var searchQueryArray2 = [];
 
         window.onscroll = function() {scrollFunction()};
 
@@ -133,6 +137,8 @@
                     cell.style.color = 'red';
                 }
             });
+            // var negPhraseArray1 = [[${negPhrases}]];
+            // var searchQueryArray1 = [[${searchQueries}]];
         });
         function applySelectedOption(searchQueryId) {
             var selectedElement = document.getElementById('select-' + searchQueryId);
@@ -205,7 +211,7 @@
             var cell = document.getElementById('editableCell-' + searchQueryId);
             var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
             const words = cellText.split(' ');
-            if (words.length > 7) {
+            if (words.length > 10||cellText.length>80) {
                 cell.style.color = 'red';
             }
             else {
@@ -268,7 +274,6 @@
                 }
             }
         }
-
     </script>
 </head>
 <body>
@@ -300,6 +305,8 @@
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
                             <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="display: none"></th>
                             <th scope="col" style="display: none"></th>
                         </tr>
                         </thead>
@@ -312,9 +319,8 @@
                                 <td>
                                     <select style="width: 100px" required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
-                                        <option value="option2">! Форма слова</option>
-                                        <option value="option3">"" Кол-во слов</option>
-                                        <option value="option4">[] Порядок слов</option>
+                                        <option value="option3">"" Фразовое</option>
+                                        <option value="option4">[] Точное</option>
                                     </select>
                                 </td>
                                 <td>
@@ -323,7 +329,40 @@
                                             <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
                                         </button>
                                 </td>
+                                <td>
+                                        <!-- Заменяем текст на значок аккаунта -->
+                                        <button th:id="'move1-' + ${negPhrase.getId()}" onclick="move(this)" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                            <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
+                                        </button>
+                                </td>
                                 <td th:text="${negPhrase.getId()}" style="display: none"></td>
+                                <td text="negPhrase" style="display: none"></td>
+                            </tr>
+                            <tr th:each="searchQuery : ${searchQueries}">
+                                <td th:text="${searchQuery.getSearchQuery.getCampaign()}"></td>
+                                <td th:text="${searchQuery.getSearchQuery.getAddGroup()}"></td>
+                                <td contenteditable="true" th:text="${searchQuery.getSearchQuery.getText()}" th:id="'editableCell-' + ${searchQuery.getSearchQuery.getId()}" th:oninput="'checkLength(' + ${searchQuery.getSearchQuery.getId()} + ')'"></td>
+                                <td>
+                                    <select style="width: 100px" required th:id="'select-' + ${searchQuery.getSearchQuery.getId()}" th:onchange="'applySelectedOption(' + ${searchQuery.getSearchQuery.getId()} + ')'" >
+                                        <option value="option1">Широкое</option>
+                                        <option value="option3">"" Фразовое</option>
+                                        <option value="option4">[] Точное</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <!-- Заменяем текст на значок аккаунта -->
+                                    <button th:id="'delete2-' + ${searchQuery.getSearchQuery.getId()}" th:onclick="'delete2(' + ${searchQuery.getSearchQuery.getId()} + ')'" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                        <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
+                                    </button>
+                                </td>
+                                <td>
+                                    <!-- Заменяем текст на значок аккаунта -->
+                                    <button th:id="'move-' + ${searchQuery.getSearchQuery.getId()}" onclick="move(this)" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                        <img src="/static/images/move.png" alt="Аккаунт" height="20" width="20">
+                                    </button>
+                                </td>
+                                <td th:text="${searchQuery.getSearchQuery.getId()}" style="display: none"></td>
+                                <td text="searchQuery" style="display: none"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -336,48 +375,127 @@
                     <br>
                 </div>
             </div>
+        </div>
+        <div class="col">
             <br>
-            <div style="width: 600px">
-                <div class="row" style="text-align: left">
-                    <div class="col"></div>
-                    <div class="col">
-                        <form class="needs-validation" th:method="post" th:action="@{/answer}">
-                            <button onclick="endCleaning()" class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Согласовать</button>
-                            <input type="hidden" name="addedNegPhrases" id="addedNegPhrases"/>
-                            <input type="hidden" name="negPhrasesTexts" id="negPhrasesTexts"/>
-                        </form>
-                    </div>
-                    <div class="col"></div>
+            <h5>К согласованию:</h5>
+            <br>
+            <div class="row">
+                <div style="max-height: 400px; overflow-x: scroll; width: 600px">
+                    <table id="second-table" class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                        <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+                        <tr style="font-weight: normal; border-top: none">
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
+                            <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
+                            <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="display: none"></th>
+                            <th scope="col" style="display: none"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tbody>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+            <div th:if="${#lists.isEmpty(negPhrases)}">
+                <div class="row">
+                    <br>
+                    <label style="text-align: center; color: firebrick">Нет спрогнозированных минус-слов</label>
+                    <br>
+                </div>
+            </div>
+
         </div>
+    </div>
+    <div class="row" style="text-align: left">
         <div class="col"></div>
+        <div class="col"></div>
+        <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <form class="needs-validation" th:method="post" th:action="@{/endCleaning}">
+                            <button onclick="endCleaning()" class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Завершить чистку</button>
+                            <input type="hidden" name="negPhrases1" id="negPhrases1" />
+                            <input type="hidden" name="searchQueries1" id="searchQueries1" />
+                            <input type="hidden" name="negPhrases2" id="negPhrases2" />
+                            <input type="hidden" name="searchQueries2" id="searchQueries2" />
+                            <input type="hidden" name="negPhrasesTexts1" id="negPhrasesTexts1" />
+                            <input type="hidden" name="searchQueriesTexts1" id="searchQueriesTexts1" />
+                            <input type="hidden" name="negPhrasesTexts2" id="negPhrasesTexts2" />
+                            <input type="hidden" name="searchQueriesTexts2" id="searchQueriesTexts2" />
+                        </form>
+                    </div>
+                </div>
+        </div>
         <script>
             // Обработчик отправки формы
             $("form.needs-validation").on("submit", function (event) {
                 event.preventDefault(); // Предотвращаем отправку формы по умолчанию
 
-                var negPhraseArray = [];
-                var negPhraseTextsArray = [];
+                var negPhraseArray1 = [];
+                var negPhraseTexts1 = [];
+                var searchQueryArray1 = [];
+                var searchQueryTexts1 = [];
+                var negPhraseArray2 = [];
+                var negPhraseTexts2 = [];
+                var searchQueryArray2 = [];
+                var searchQueryTexts2 = [];
 
                 // Проходим по каждой строке в первой таблице
                 $("#first-table tbody tr").each(function () {
                     var tds = $(this).find("td");
-                    var objectId = $(tds[5]).text();
+                    var objectType = $(tds[7]).attr("text");
+                    var objectId = $(tds[6]).text();
                     var objectText = $(tds[2]).text();
-                    negPhraseArray.push(objectId);
-                    negPhraseTextsArray.push(objectText);
 
+                    if (objectType === 'searchQuery') {
+                        searchQueryArray1.push(objectId);
+                        searchQueryTexts1.push(objectText);
+                    } else {
+                        negPhraseArray1.push(objectId);
+                        negPhraseTexts1.push(objectText);
+                    }
                 });
 
-                $("#addedNegPhrases").val(JSON.stringify(negPhraseArray));
-                $("#negPhrasesTexts").val(JSON.stringify(negPhraseTextsArray));
+                // Проходим по каждой строке во второй таблице
+                $("#second-table tbody tr").each(function () {
+                    var tds = $(this).find("td");
+                    var objectType = $(tds[7]).attr("text");
+                    var objectId = $(tds[6]).text();
+                    var objectText = $(tds[2]).text();
+
+                    if (objectType === 'searchQuery') {
+                        searchQueryArray2.push(objectId);
+                        searchQueryTexts2.push(objectText);
+                    } else {
+                        negPhraseArray2.push(objectId);
+                        negPhraseTexts2.push(objectText);
+                    }
+                });
+
+                // Устанавливаем значения скрытых полей формы
+                $("#negPhrases1").val(JSON.stringify(negPhraseArray1));
+                $("#searchQueries1").val(JSON.stringify(searchQueryArray1));
+                $("#negPhrases2").val(JSON.stringify(negPhraseArray2));
+                $("#searchQueries2").val(JSON.stringify(searchQueryArray2));
+                $("#negPhrasesTexts1").val(JSON.stringify(negPhraseTexts1));
+                $("#searchQueriesTexts1").val(JSON.stringify(searchQueryTexts1));
+                $("#negPhrasesTexts2").val(JSON.stringify(negPhraseTexts2));
+                $("#searchQueriesTexts2").val(JSON.stringify(searchQueryTexts2));
 
                 // Отправляем форму
                 this.submit();
             });
         </script>
+        <div class="col"></div>
+        <div class="col"></div>
     </div>
+</div>
 </div>
 <button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
 <div th:replace="fragments/footer :: footer"></div>

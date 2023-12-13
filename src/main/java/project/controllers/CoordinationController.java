@@ -28,6 +28,8 @@ public class CoordinationController {
     @Autowired
     private NegPhraseRepository negPhraseRepository;
     List<NegPhrase> negPhrases = new ArrayList<>();
+
+    List<NegPhrase> negPhrasesAnswer = new ArrayList<>();
     @GetMapping("/messagesBoss")
     public String messagesBoss(Model model) {
         List<Clean> cleans = cleanRepository.findAll();
@@ -47,6 +49,25 @@ public class CoordinationController {
         model.addAttribute("cleans", cleans1);
         return "messagesBoss";
     }
+    @GetMapping("/messagesSpec")
+    public String messagesSpec(Model model) {
+        List<Clean> cleans = cleanRepository.findAll();
+        List<Clean> cleans1 = new ArrayList<>();
+        for (Clean clean: cleans) {
+            List<NegPhrase> negPhrases1 = new ArrayList<>();
+            List<SearchQuery> searchQueries = searchQueryRepository.findAllByClean(clean);
+            for (SearchQuery searchQuery: searchQueries) {
+                List<NegPhrase> negPhrases = negPhraseRepository.findAllBySearchQuery(searchQuery);
+                for (NegPhrase negphrase:negPhrases) {
+                    if(negphrase.getStatus().equals("agreed"))
+                        negPhrases1.add(negphrase);
+                }
+            }
+            if (!negPhrases1.isEmpty()) cleans1.add(clean);
+        }
+        model.addAttribute("cleans", cleans1);
+        return "messagesSpec";
+    }
     @PostMapping("/questionCard")
     public String questionCard(Model model, @RequestParam("cleanId") String id) {
         Clean clean = cleanRepository.getReferenceById(Long.valueOf(id));
@@ -61,19 +82,57 @@ public class CoordinationController {
             }
             negPhrases = negPhrases1;
         model.addAttribute("negPhrases", negPhrases1);
+        if (clean.getAdvertisingSystem().contains("Яндекс"))
         return "questionList";
+        else return "questionListGoogle";
+    }
+    @PostMapping("/answerCard")
+    public String answerCard(Model model, @RequestParam("cleanId") String id) {
+        Clean clean = cleanRepository.getReferenceById(Long.valueOf(id));
+        List<NegPhrase> negPhrases1 = new ArrayList<>();
+        List<SearchQuery> searchQueries = searchQueryRepository.findAllByClean(clean);
+        for (SearchQuery searchQuery: searchQueries) {
+            List<NegPhrase> negPhrases2 = negPhraseRepository.findAllBySearchQuery(searchQuery);
+            for (NegPhrase negPhrase: negPhrases2) {
+                if (negPhrase.getStatus().equals("agreed"))
+                    negPhrases1.add(negPhrase);
+            }
+        }
+        negPhrasesAnswer = negPhrases1;
+        model.addAttribute("negPhrases", negPhrasesAnswer);
+        return "answersList";
+    }
+    @PostMapping("/answerSeen")
+    public String answerSeen(Model model) {
+        for (NegPhrase negPhrase:negPhrasesAnswer) {
+            negPhrase.setStatus("added");
+            negPhraseRepository.save(negPhrase);
+        }
+        List<Clean> cleans = cleanRepository.findAll();
+        List<Clean> cleans1 = new ArrayList<>();
+        for (Clean clean: cleans) {
+            List<NegPhrase> negPhrases1 = new ArrayList<>();
+            List<SearchQuery> searchQueries = searchQueryRepository.findAllByClean(clean);
+            for (SearchQuery searchQuery: searchQueries) {
+                List<NegPhrase> negPhrases = negPhraseRepository.findAllBySearchQuery(searchQuery);
+                for (NegPhrase negphrase:negPhrases) {
+                    if(negphrase.getStatus().equals("agreed"))
+                        negPhrases1.add(negphrase);
+                }
+            }
+            if (!negPhrases1.isEmpty()) cleans1.add(clean);
+        }
+        model.addAttribute("cleans", cleans1);
+        return "messagesSpec";
     }
 
     @PostMapping("/answer")
     public String answer(Model model, @RequestParam("addedNegPhrases") List<String> addedNegPhrases, @RequestParam("negPhrasesTexts") List<String> negPhrasesTexts) {
         final List<String> negIdsCopy1 = removeSymbols(addedNegPhrases);
         final List<String> negIdsCopyTexts1 = removeSymbols1(negPhrasesTexts);
-
-
         List<NegPhrase> addedPhrases = negPhrases.stream()
                 .filter(negPhrase -> negIdsCopy1.contains(String.valueOf(negPhrase.getId())))
                 .collect(Collectors.toList());
-
         int index = 0;
         for (NegPhrase negPhrase: addedPhrases) {
             negPhrase.setText(negIdsCopyTexts1.get(0));
@@ -81,10 +140,16 @@ public class CoordinationController {
             negPhraseRepository.save(negPhrase);
             index++;
         }
-
-        negPhrases.remove(addedNegPhrases);
+        List<NegPhrase> negPhrasesToDelete = new ArrayList<>();
         for (NegPhrase negPhrase: negPhrases) {
-            negPhraseRepository.delete(negPhrase);
+            int i =0;
+            for (NegPhrase neg: addedPhrases) {
+                if (neg.equals(negPhrase)) i++;
+            }
+            if (i==0) negPhrasesToDelete.add(negPhrase);
+        }
+        for (NegPhrase n: negPhrasesToDelete) {
+            negPhraseRepository.delete(n);
         }
         List<Clean> cleans = cleanRepository.findAll();
         List<Clean> cleans1 = new ArrayList<>();

@@ -128,7 +128,7 @@
                 const words = text.split(' ');
 
                 // Проверяем количество слов
-                if (words.length > 7) {
+                if (words.length > 10||text.length>80) {
                     // Устанавливаем красный цвет текста
                     cell.style.color = 'red';
                 }
@@ -194,7 +194,7 @@
             var cell = document.getElementById('editable-' + searchQueryId);
             var cellText = document.getElementById('editable-' + searchQueryId).textContent;
             const words = cellText.split(' ');
-            if (words.length > 7) {
+            if (words.length > 10||cellText.length>80) {
                 cell.style.color = 'red';
             }
             else {
@@ -312,9 +312,8 @@
                                 <td>
                                     <select style="width: 100px" required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
                                         <option value="option1">Широкое</option>
-                                        <option value="option2">! Форма слова</option>
-                                        <option value="option3">"" Кол-во слов</option>
-                                        <option value="option4">[] Порядок слов</option>
+                                        <option value="option3">"" Фразовое</option>
+                                        <option value="option4">[] Точное</option>
                                     </select>
                                 </td>
                                 <td>

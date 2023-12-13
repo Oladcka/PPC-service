@@ -122,7 +122,7 @@
                     </div>
                     <div class="col" style="text-align: center">
                         <br>
-                        <form th:id="${clean.getId()}" class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/questionCard}">
+                        <form th:id="${clean.getId()}" class="needs-validation" style="padding: 10px" th:method="post" th:action="@{/answerCard}">
                             <input name="cleanId" id="cleanId" style="visibility: hidden">
                             <button class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent" type="submit">
                                 <img src="/static/images/open.png" alt="Вопрос" height="100" width="100">
@@ -131,8 +131,7 @@
                         <script>
                             // Обработчик отправки формы
                             $("form.needs-validation").on("submit", function (event) {
-                                event.preventDefault(); // Предотвращаем отправку формы по умолчанию
-                                // Устанавливаем значения скрытых полей формы
+                                event.preventDefault();
                                 $(this).find("input[name='cleanId']").val(this.id);
                                 this.submit();
                             });

@@ -87,51 +87,46 @@
                 }
             </script>
 </head>
-<body>
+<body style="background-color: dimgrey">
 
 <header th:insert ="~{fragments/header :: header}"></header>
 
-<div class="container" style="margin-right: 100px; padding-left: 200px; padding-right: 300px">
+<div class="container justify-content-center" style="margin-right: 100px; padding-left: 200px; padding-right: 300px; background-color: dimgrey">
     <br>
-    <h5>Личный кабинет</h5>
-    <form class="needs-validation" th:method="post" th:action="@{/changeAccount}" enctype="multipart/form-data">
-
+    <form class="needs-validation" th:method="post" th:action="@{/changeAccount}" enctype="multipart/form-data" style="max-width: 300px; background-color: white; margin: 30px; border-radius: 15px">
+        <br>
         <div class="row justify-content-center">
             <div style="text-align: center; width: 200px; height: 200px; border-radius: 100%; border: 5px solid #ffc24b; overflow: hidden; display: flex; justify-content: center; align-items: center;">
                 <img th:src="${person.getPhoto()}" style="object-fit: cover;" id="accImage" alt="Photo" height="100%" width="120%">
             </div>
         </div>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-        <div class="row">
+        <div class="row" style="padding-left: 10px">
             <div class="form-floating">
                 <input type="file" style = "border-color: black" name="image" id="image" multiple accept="image/*" onchange="previewImage(event)">
                 <br/><br/>
             </div>
         </div>
         <br>
-        <div class="form-floating mb-3" style="color: black">
+        <div class="form-floating mb-3" style="color: black; padding-right: 10px; padding-left: 10px">
             <input type="text" class="form-control" id="name" th:value="${person.getName()}"  th:placeholder="${person.getName()}" name="name" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
 <!--            <label for="name">Имя</label>-->
         </div>
-        <div class="form-floating mb-3" style="color: black">
+        <div class="form-floating mb-3" style="color: black; padding-right: 10px; padding-left: 10px">
             <input type="text" class="form-control" id="surname" th:value="${person.getSurname()}" th:placeholder="${person.getSurname()}" name="surname" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
 <!--            <label for="surname">Фамилия</label>-->
         </div>
-        <div class="form-floating mb-3" style="color: black">
+        <div class="form-floating mb-3" style="color: black; padding-right: 10px; padding-left: 10px">
             <input type="text" class="form-control" id="floatingInput" th:value="${person.getUser.getLogin()}" th:placeholder="${person.getUser.getLogin()}" name="login" required minlength="8" maxlength="16">
 <!--            <label for="floatingInput">Логин</label>-->
         </div>
         <div th:if="${errorMessage}" class="text-danger" style="font-size: smaller;">
             <p th:text="${errorMessage}"></p>
         </div>
-        <div class="row">
+        <div class="row" style="padding: 10px">
             <div class="col">
-                <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller; width: 100px" type="submit">Изменить</button>
+                <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type="submit">Изменить</button>
             </div>
-            <div class="col"></div>
-            <div class="col"></div>
-            <div class="col"></div>
-            <div class="col"></div>
         </div>
     </form>
     <br/>

@@ -298,9 +298,6 @@
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
                             <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
                             <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
-                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
-                            <th scope="col" style="width: 40px"></th>
-                            <th scope="col" style="display: none"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -308,22 +305,7 @@
                             <tr th:each="negPhrase : ${negPhrases}">
                                 <td th:text="${negPhrase.getSearchQuery.getCampaign()}"></td>
                                 <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
-                                <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}" th:oninput="'checkLength1(' + ${negPhrase.getId()} + ')'"></td>
-                                <td>
-                                    <select style="width: 100px" required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
-                                        <option value="option1">Широкое</option>
-                                        <option value="option2">! Форма слова</option>
-                                        <option value="option3">"" Кол-во слов</option>
-                                        <option value="option4">[] Порядок слов</option>
-                                    </select>
-                                </td>
-                                <td>
-                                        <!-- Заменяем текст на значок аккаунта -->
-                                        <button th:id="'delete1-' + ${negPhrase.getId()}" th:onclick="'delete1(' + ${negPhrase.getId()} + ')'" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
-                                            <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
-                                        </button>
-                                </td>
-                                <td th:text="${negPhrase.getId()}" style="display: none"></td>
+                                <td th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}" th:oninput="'checkLength1(' + ${negPhrase.getId()} + ')'"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -337,46 +319,17 @@
                 </div>
             </div>
             <br>
-            <div style="width: 600px">
-                <div class="row" style="text-align: left">
-                    <div class="col"></div>
-                    <div class="col">
-                        <form class="needs-validation" th:method="post" th:action="@{/answer}">
-                            <button onclick="endCleaning()" class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Согласовать</button>
-                            <input type="hidden" name="addedNegPhrases" id="addedNegPhrases"/>
-                            <input type="hidden" name="negPhrasesTexts" id="negPhrasesTexts"/>
-                        </form>
-                    </div>
-                    <div class="col"></div>
+            <div class="row" style="text-align: left">
+                <div class="col"></div>
+                <div class="col">
+                    <form class="needs-validation" th:method="post" th:action="@{/answerSeen}">
+                        <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Выполнено</button>
+                    </form>
                 </div>
+                <div class="col"></div>
             </div>
         </div>
         <div class="col"></div>
-        <script>
-            // Обработчик отправки формы
-            $("form.needs-validation").on("submit", function (event) {
-                event.preventDefault(); // Предотвращаем отправку формы по умолчанию
-
-                var negPhraseArray = [];
-                var negPhraseTextsArray = [];
-
-                // Проходим по каждой строке в первой таблице
-                $("#first-table tbody tr").each(function () {
-                    var tds = $(this).find("td");
-                    var objectId = $(tds[5]).text();
-                    var objectText = $(tds[2]).text();
-                    negPhraseArray.push(objectId);
-                    negPhraseTextsArray.push(objectText);
-
-                });
-
-                $("#addedNegPhrases").val(JSON.stringify(negPhraseArray));
-                $("#negPhrasesTexts").val(JSON.stringify(negPhraseTextsArray));
-
-                // Отправляем форму
-                this.submit();
-            });
-        </script>
     </div>
 </div>
 <button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>

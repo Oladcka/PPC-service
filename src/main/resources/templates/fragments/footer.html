@@ -1,26 +1,12 @@
-<!DOCTYPE html>
-<html lang="ru" xmlns:th="http://thymeleaf.org">
-<head>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
 
-<div class="container">
-<div class="row">
-    <br>
-    <br>
+<div th:fragment = "footer">
+    <footer class="d-flex align-items-center" style="padding-top: 20px">
+        <br>
+        <br>
+          <div class="col" style="text-align: center; background-color: dimgrey">
+              <br>
+              <p class="text-body-secondary" style="color: white">info@company.by</p>
+              <p class="text-body-secondary" style="color: white">© 2023</p>
+          </div>
+    </footer>
 </div>
-<footer th:fragment="footer" class="d-flex align-items-center" style="padding-top: 20px">
-    <br>
-    <br>
-      <div class="col" style="text-align: center; background-color: dimgrey">
-          <br>
-          <p class="text-body-secondary" style="color: white">info@company.by</p>
-          <p class="text-body-secondary" style="color: white">© 2023</p>
-      </div>
-</footer>
-</div>
-</body>
-</html>
