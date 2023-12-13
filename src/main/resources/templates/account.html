@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+        <html lang="ru" xmlns:th="http://thymeleaf.org">
+
+        <head>
+        <title>cleaning</title>
+    <meta charset="utf-8">
+    <!-- Настройка viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>...</title>
+    <!-- Bootstrap CSS (jsDelivr CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Bootstrap Bundle JS (jsDelivr CDN) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <link rel="icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <style>
+        #topBtn {
+            display: none;
+            position: fixed;
+            font-size: 24px;
+            align-items: center;
+            font-weight: bold;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #cbcdcd;
+            color: white;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        #topBtn:hover {
+            background-color: #ffc24b;
+            color: white;
+        }
+        .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sortable:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .sortable.asc:after {
+            background-image: url("/images/up.png"); /* Иконка вверх при возрастающей сортировке */
+        }
+
+        .sortable.desc:after {
+            background-image: url("/images/down.png"); /* Иконка вниз при убывающей сортировке */
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                function previewImage(event) {
+                    var input = event.target;
+                    var files = input.files;
+
+                    // Проверяем количество выбранных файлов
+                    if (files.length > 1) {
+                        alert("Пожалуйста, выберите только одно изображение.");
+                        input.value = ""; // Сбрасываем выбранные файлы
+                        return; // Прекращаем выполнение функции
+                    }
+
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var previewImage = document.getElementById('accImage');
+                        previewImage.src = reader.result;
+                    };
+
+                    reader.readAsDataURL(files[0]);
+                }
+            </script>
+</head>
+<body>
+
+<header th:insert ="~{fragments/header :: header}"></header>
+
+<div class="container" style="margin-right: 100px; padding-left: 200px; padding-right: 300px">
+    <br>
+    <h5>Личный кабинет</h5>
+    <form class="needs-validation" th:method="post" th:action="@{/changeAccount}" enctype="multipart/form-data">
+
+        <div class="row justify-content-center">
+            <div style="text-align: center; width: 200px; height: 200px; border-radius: 100%; border: 5px solid #ffc24b; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img th:src="${person.getPhoto()}" style="object-fit: cover;" id="accImage" alt="Photo" height="100%" width="120%">
+            </div>
+        </div>
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+        <div class="row">
+            <div class="form-floating">
+                <input type="file" style = "border-color: black" name="image" id="image" multiple accept="image/*" onchange="previewImage(event)">
+                <br/><br/>
+            </div>
+        </div>
+        <br>
+        <div class="form-floating mb-3" style="color: black">
+            <input type="text" class="form-control" id="name" th:value="${person.getName()}"  th:placeholder="${person.getName()}" name="name" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
+<!--            <label for="name">Имя</label>-->
+        </div>
+        <div class="form-floating mb-3" style="color: black">
+            <input type="text" class="form-control" id="surname" th:value="${person.getSurname()}" th:placeholder="${person.getSurname()}" name="surname" required minlength="2" maxlength="16" pattern="^[А-Яа-яЁё]+$">
+<!--            <label for="surname">Фамилия</label>-->
+        </div>
+        <div class="form-floating mb-3" style="color: black">
+            <input type="text" class="form-control" id="floatingInput" th:value="${person.getUser.getLogin()}" th:placeholder="${person.getUser.getLogin()}" name="login" required minlength="8" maxlength="16">
+<!--            <label for="floatingInput">Логин</label>-->
+        </div>
+        <div th:if="${errorMessage}" class="text-danger" style="font-size: smaller;">
+            <p th:text="${errorMessage}"></p>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller; width: 100px" type="submit">Изменить</button>
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+    </form>
+    <br/>
+</div>
+<button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>

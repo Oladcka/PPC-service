@@ -59,7 +59,7 @@ public class UserService {
             fio.close();
         }
         catch (Exception e) {
-            person.setPhoto("../../images/acc.png" + images[0].getOriginalFilename());
+            person.setPhoto("../../images/acc.png");
             personRepository.save(person);
             return true;
         }
