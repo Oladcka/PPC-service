@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <title>cleaning</title>
+    <meta charset="utf-8">
+    <!-- Настройка viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>...</title>
+    <!-- Bootstrap CSS (jsDelivr CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Bootstrap Bundle JS (jsDelivr CDN) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn0.iconfinder.com/data/icons/business-1390/24/20_-_Company-2-256.png" type="image/x-icon">
+    <style>
+        #topBtn {
+            display: none;
+            position: fixed;
+            font-size: 24px;
+            align-items: center;
+            font-weight: bold;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #cbcdcd;
+            color: white;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        #topBtn:hover {
+            background-color: #ffc24b;
+            color: white;
+        }
+        .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sortable:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .sortable.asc:after {
+            background-image: url("/static/images/up.png"); /* Иконка вверх при возрастающей сортировке */
+        }
+
+        .sortable.desc:after {
+            background-image: url("/static/images/down.png"); /* Иконка вниз при убывающей сортировке */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+        window.onscroll = function() {scrollFunction()};
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
+                document.getElementById("topBtn").style.display = "block";
+            } else {
+                document.getElementById("topBtn").style.display = "none";
+            }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+        $(document).ready(function() {
+            $('.sortable').click(function() {
+                var table = $(this).closest('table');
+                var rows = table.find('tbody > tr').get();
+                var index = $(this).index();
+                var isAscending = $(this).hasClass('asc');
+                var isDescending = $(this).hasClass('desc');
+
+                rows.sort(function(a, b) {
+                    var aValue = $(a).find('td').eq(index).text();
+                    var bValue = $(b).find('td').eq(index).text();
+
+                    if ($.isNumeric(aValue) && $.isNumeric(bValue)) {
+                        aValue = parseFloat(aValue);
+                        bValue = parseFloat(bValue);
+                    }
+
+                    if (isAscending) {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                });
+
+                table.find('th').removeClass('asc desc');
+                if (isAscending) {
+                    $(this).toggleClass('asc desc');
+                } else if (isDescending) {
+                    $(this).toggleClass('asc');
+                } else {
+                    $(this).toggleClass('asc');
+                }
+
+                table.find('tbody').empty().append(rows);
+            });
+            const editableCells = document.querySelectorAll('td[contenteditable="true"]');
+
+// Проходимся по каждому элементу
+            editableCells.forEach(function(cell) {
+                // Получаем текст внутри элемента
+                const text = cell.textContent.trim();
+
+                // Разбиваем текст на слова
+                const words = text.split(' ');
+
+                // Проверяем количество слов
+                if (words.length > 7) {
+                    // Устанавливаем красный цвет текста
+                    cell.style.color = 'red';
+                }
+            });
+        });
+        function applySelectedOption(searchQueryId) {
+            var selectedElement = document.getElementById('select-' + searchQueryId);
+            var selectedOption = document.getElementById('select-' + searchQueryId).value;
+            var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
+            var docElement = document.getElementById('editableCell-' + searchQueryId);
+            var withoutBrackets = "";
+            for (var i =0; i< 3; i++) {
+                const withoutExclamation = cellText.replace(/^! /, '');
+                const withoutQuotes = withoutExclamation.replace(/^"(.*)"$/, '$1');
+                withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
+            }
+            if (selectedOption === 'option1') {
+                docElement.textContent = withoutBrackets;
+            } else if (selectedOption === 'option2') {
+                if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
+                    docElement.textContent = '! ' + withoutBrackets;
+                } else {
+                    alert('Ошибка! Фраза содержать только одно слово.');
+                    docElement.textContent = withoutBrackets;
+                    selectedElement.value = 'option1';
+                    // selectedOption.textContent = 'Широкое';
+                }
+            } else if (selectedOption === 'option3') {
+                docElement.textContent = '"' + withoutBrackets + '"';
+            } else if (selectedOption === 'option4') {
+                docElement.textContent = '[' + withoutBrackets + ']';
+            }
+        }
+        function applySelectedOption1(searchQueryId) {
+            var selectedElement = document.getElementById('select-' + searchQueryId);
+            var selectedOption = document.getElementById('select-' + searchQueryId).value;
+            var cellText = document.getElementById('editable-' + searchQueryId).textContent;
+            var docElement = document.getElementById('editable-' + searchQueryId);
+            var withoutBrackets = "";
+            for (var i =0; i< 3; i++) {
+                const withoutExclamation = cellText.replace(/^! /, '');
+                const withoutQuotes = withoutExclamation.replace(/^"(.*)"$/, '$1');
+                withoutBrackets = withoutQuotes.replace(/^\[(.*)\]$/, '$1');
+            }
+            if (selectedOption === 'option1') {
+                docElement.textContent = withoutBrackets;
+            } else if (selectedOption === 'option2') {
+                if (!cellText.startsWith('!') && cellText.split(' ').length === 1) {
+                    docElement.textContent = '! ' + withoutBrackets;
+                } else {
+                    alert('Ошибка! Фраза содержать только одно слово.');
+                    docElement.textContent = withoutBrackets;
+                    selectedElement.value = 'option1';
+                    // selectedOption.textContent = 'Широкое';
+                }
+            } else if (selectedOption === 'option3') {
+                docElement.textContent = '"' + withoutBrackets + '"';
+            } else if (selectedOption === 'option4') {
+                docElement.textContent = '[' + withoutBrackets + ']';
+            }
+        }
+        function checkLength1(searchQueryId) {
+            var cell = document.getElementById('editable-' + searchQueryId);
+            var cellText = document.getElementById('editable-' + searchQueryId).textContent;
+            const words = cellText.split(' ');
+            if (words.length > 7) {
+                cell.style.color = 'red';
+            }
+            else {
+                cell.style.color = 'black';
+            }
+        }
+        function checkLength(searchQueryId) {
+            var cell = document.getElementById('editableCell-' + searchQueryId);
+            var cellText = document.getElementById('editableCell-' + searchQueryId).textContent;
+            const words = cellText.split(' ');
+            if (words.length > 7) {
+                cell.style.color = 'red';
+            }
+            else {
+                cell.style.color = 'black';
+            }
+        }
+        function move(button) {
+            var row = button.parentNode.parentNode; // Получаем родительскую строку таблицы
+            var tbody = row.parentNode;
+            var table = tbody.parentNode; // Получаем родительскую таблицу
+            var tableId = table.id; // Получаем id таблицы
+            var row = document.getElementById(button.id).closest("tr");
+            if (tableId==='first-table')
+            document.querySelector("#second-table > tbody").appendChild(row);
+            else document.querySelector("#first-table > tbody").appendChild(row);
+        }
+        function delete1(negPhraseId) {
+            var row = document.getElementById("editable-" + negPhraseId).closest("tr");
+            row.remove();
+        }
+        function delete2(negPhraseId) {
+            var row = document.getElementById("editableCell-" + negPhraseId).closest("tr");
+            row.remove();
+        }
+        function copyFields() {
+            var table = document.getElementById('first-table');
+            var rows = table.getElementsByTagName('tr');
+            var copiedData = [];
+            var sysInputs = [];
+
+            for (var i = 1; i < rows.length; i++) {
+                var row = rows[i];
+                var cells = row.getElementsByTagName('td');
+                var rowData = [];
+                for (var j = 0; j < 3; j++) {
+                    const sysInput = document.createElement('input');
+                    sysInput.setAttribute("id", i.toString() + "-" + j.toString());
+                    sysInput.setAttribute("value", cells[j].textContent);
+                    sysInput.select();
+                    sysInputs.push(sysInput);
+                    rowData.push(cells[j].textContent); // Store the copied cell data
+                }
+                copiedData.push(rowData.join('\t')); // Join the row cell data with a tab separator
+            }
+
+            var joinedData = copiedData.join('\n'); // Join the row data with a newline separator
+
+            // Copy the joined data to clipboard
+            const tempInput = document.createElement('textarea');
+            tempInput.value = joinedData;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            for (var i = 0; i < sysInputs.length; i++) {
+                var sysInput = sysInputs[i];
+                if (sysInput.parentNode) {
+                    sysInput.parentNode.removeChild(sysInput);
+                }
+            }
+        }
+
+    </script>
+</head>
+<body>
+
+<header th:insert ="~{fragments/header :: header}"></header>
+
+<div class="container" style="margin-right: 100px">
+    <div class="row">
+        <div class="col">
+            <br>
+            <div class="row">
+                <div class="col-auto" style="width: 50px">
+                    <button onclick="copyFields()" class="btn btn-outline-primary me-2" id="copy" style="background-color: white; color: black; border-color: white">
+                        <img src="/static/images/copy.png" alt="Скачать" height="20" width="20">
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <h5>Минус-фразы:</h5>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div style="max-height: 400px; overflow-x: scroll; width: 600px">
+                    <table id="first-table" class="table table-striped table-sm table-b table-bordered" style="text-align: left">
+                        <thead style="background-color: #ffc24b; border-color: white; color: black; font-weight: normal; border-bottom: none">
+                        <tr style="font-weight: normal; border-top: none">
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Кампания</th>
+                            <th class="sortable" style="font-weight: normal" scope="col">Группа</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Минус-фразы</th>
+                            <th class="sortable" style="font-weight: normal; border-bottom: none" scope="col">Соответствие</th>
+                            <th scope="col" style="width: 40px"></th>
+                            <th scope="col" style="visibility: hidden"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tbody>
+                            <tr th:each="negPhrase : ${negPhrases}">
+                                <td th:text="${negPhrase.getSearchQuery.getCampaign()}"></td>
+                                <td th:text="${negPhrase.getSearchQuery.getAddGroup()}"></td>
+                                <td contenteditable="true" th:text="${negPhrase.getText()}" th:id="'editable-' + ${negPhrase.getId()}" th:oninput="'checkLength1(' + ${negPhrase.getId()} + ')'"></td>
+                                <td>
+                                    <select style="width: 100px" required th:id="'select-' + ${negPhrase.getId()}" th:onchange="'applySelectedOption1(' + ${negPhrase.getId()} + ')'" >
+                                        <option value="option1">Широкое</option>
+                                        <option value="option2">! Форма слова</option>
+                                        <option value="option3">"" Кол-во слов</option>
+                                        <option value="option4">[] Порядок слов</option>
+                                    </select>
+                                </td>
+                                <td>
+                                        <!-- Заменяем текст на значок аккаунта -->
+                                        <button th:id="'delete1-' + ${negPhrase.getId()}" th:onclick="'delete1(' + ${negPhrase.getId()} + ')'" class="btn btn-outline-primary me-2" style="background-color: transparent; color: black; border-color: transparent">
+                                            <img src="/static/images/bin.png" alt="Аккаунт" height="20" width="20">
+                                        </button>
+                                </td>
+                                <td th:text="${negPhrase.getId()}" style="visibility: hidden"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(negPhrases)}">
+                <div class="row">
+                    <br>
+                    <label style="text-align: center; color: firebrick">Нет спрогнозированных минус-слов</label>
+                    <br>
+                </div>
+            </div>
+            <br>
+            <div class="row" style="text-align: left">
+                <div class="col"></div>
+                <div class="col">
+                    <form class="needs-validation" th:method="post" th:action="@{/answer}">
+                        <button onclick="endCleaning()" class="w-100 btn btn-lg btn-light" style = "background-color: #ffc24b; border-color:white;color: black; font-size: smaller" type=>Завершить чистку</button>
+                        <input type="hidden" name="addedNegPhrases" id="addedNegPhrases"/>
+                        <input type="hidden" name="negPhrasesTexts" id="negPhrasesTexts"/>
+                    </form>
+                </div>
+                <div class="col"></div>
+            </div>
+        </div>
+        <div class="col"></div>
+        <script>
+            // Обработчик отправки формы
+            $("form.needs-validation").on("submit", function (event) {
+                event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+                var negPhraseArray = [];
+                var negPhraseTextsArray = [];
+
+                // Проходим по каждой строке в первой таблице
+                $("#first-table tbody tr").each(function () {
+                    var tds = $(this).find("td");
+                    var objectId = $(tds[6]).text();
+                    var objectText = $(tds[2]).text();
+                    negPhraseArray.push(objectId);
+                    negPhraseTextsArray.push(objectText);
+
+                });
+
+                $("#addedNegPhrases").val(JSON.stringify(negPhraseArray));
+                $("#negPhrasesTexts").val(JSON.stringify(negPhraseTextsArray));
+
+                // Отправляем форму
+                this.submit();
+            });
+        </script>
+    </div>
+</div>
+<button onclick="topFunction()" id="topBtn" title="Go to top" style="padding: 0">^</button>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+
+</html>

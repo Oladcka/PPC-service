@@ -620,14 +620,14 @@ public class CleaningController {
             @RequestParam("negPhrasesTexts2") List<String> negPhrasesTexts2,
             @RequestParam("searchQueriesTexts2") List<String> searchQueriesTexts2
     ) {
-        final List<String> negIdsCopy1 = removeSymbols(negPhrases1);
+                final List<String> negIdsCopy1 = removeSymbols(negPhrases1);
         final List<String> negIdsCopy2 = removeSymbols(negPhrases2);
         final List<String> queryIdsCopy1 = removeSymbols(searchQueries1);
         final List<String> queryIdsCopy2 = removeSymbols(searchQueries2);
-        final List<String> negIdsCopyTexts1 = removeSymbols(negPhrasesTexts1);
-        final List<String> negIdsCopyTexts2 = removeSymbols(negPhrasesTexts2);
-        final List<String> queryIdsCopyTexts1 = removeSymbols(searchQueriesTexts1);
-        final List<String> queryIdsCopyTexts2 = removeSymbols(searchQueriesTexts2);
+        final List<String> negIdsCopyTexts1 = removeSymbols1(negPhrasesTexts1);
+        final List<String> negIdsCopyTexts2 = removeSymbols1(negPhrasesTexts2);
+        final List<String> queryIdsCopyTexts1 = removeSymbols1(searchQueriesTexts1);
+        final List<String> queryIdsCopyTexts2 = removeSymbols1(searchQueriesTexts2);
         Calendar calendar = Calendar.getInstance();
         Date currentDate = calendar.getTime();
         Clean clean1 = new Clean();
@@ -783,6 +783,28 @@ public class CleaningController {
         for (String str : strings) {
             str = str.replaceAll("[\"\\[\\]]", "");
             cleanedStrings.add(str);
+        }
+        return cleanedStrings;
+    }
+    private List<String> removeSymbols1(List<String> strings) {
+        List<String> cleanedStrings = new ArrayList<>();
+        if(!strings.isEmpty())
+        {
+           if (strings.size()==1) {
+               if (strings.get(0).length()!=2) {
+                   String str = strings.get(0).substring(2, strings.get(0).length() - 2).replace("\\", "");
+                   cleanedStrings.add(str);
+               }
+           } else {
+               String str = strings.get(0).substring(2,strings.get(0).length()-1).replace("\\","");
+               cleanedStrings.add(str);
+               for (int i = 1; i<(strings.size()-1);i++) {
+                   String str1 = strings.get(i).substring(1,strings.get(i).length()-1).replace("\\","");
+                   cleanedStrings.add(str1);
+               }
+               String str2 = strings.get(strings.size()-1).substring(1,strings.get(strings.size()-1).length()-2).replace("\\","");
+               cleanedStrings.add(str2);
+           }
         }
         return cleanedStrings;
     }

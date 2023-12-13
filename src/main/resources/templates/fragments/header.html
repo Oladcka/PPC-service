@@ -73,10 +73,10 @@
         <a class="nav-link" th:href="@{/loadRep}" style="background-color: #ffc24b; color: black">Чистки</a>
       </li>
       <li th:if="${#authorization.expression('hasRole(''ROLE_BOSS'')')}">
-        <a class="nav-link" style="background-color: #ffc24b; color: black">Сообщения</a>
+        <a class="nav-link" th:href="@{/messagesBoss}" style="background-color: #ffc24b; color: black">Сообщения</a>
       </li>
       <li th:if="${#authorization.expression('hasRole(''ROLE_SPECIALIST'')')}">
-        <a class="nav-link" style="background-color: #ffc24b; color: black">Сообщения</a>
+        <a class="nav-link" th:href="@{/messagesSpec}" style="background-color: #ffc24b; color: black">Сообщения</a>
       </li>
       <li th:if="${#authorization.expression('hasRole(''ROLE_BOSS'')')}">
         <a class="nav-link" th:href="@{/workers}" style="background-color: #ffc24b; color: black">Сотрудники</a>
